@@ -1,4 +1,13 @@
-export type AssetClass = 'Ação' | 'BDR' | 'ETF' | 'FII';
+export type MarketType = 'usa';
+export type MarketUniverse = MarketType;
+export type USUniverse = 'all' | 'sp500' | 'nasdaq' | 'nyse' | 'etf';
+
+export type AssetClass =
+  | 'S&P 500'
+  | 'Nasdaq'
+  | 'NYSE'
+  | 'ETF'
+  | 'Stock';
 
 export interface AssetOpportunity {
   Ticker: string;
@@ -20,6 +29,9 @@ export interface AssetOpportunity {
   EMA20?: number;
   EMA50?: number;
   EMA200?: number;
+  exchange?: 'NASDAQ' | 'NYSE' | string;
+  index?: 'S&P 500' | 'Nasdaq 100' | 'Dow 30' | 'Russell' | string;
+  currency?: 'USD';
 }
 
 export interface HistoricalCandle {

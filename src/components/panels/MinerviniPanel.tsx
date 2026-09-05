@@ -62,15 +62,15 @@ export const MinerviniPanel: React.FC<MinerviniPanelProps> = ({ data, ticker }) 
           <div className="space-y-2">
             <div className="flex items-center justify-between text-rose-400">
               <span className="flex items-center gap-1"><ShieldAlert className="w-3.5 h-3.5" /> Stop-Loss:</span>
-              <strong>R$ {data.stop_loss.toFixed(2)} (-{data.risco_pct.toFixed(1)}%)</strong>
+              <strong>$ {data.stop_loss.toFixed(2)} (-{data.risco_pct.toFixed(1)}%)</strong>
             </div>
             <div className="flex items-center justify-between text-emerald-400">
               <span className="flex items-center gap-1"><Target className="w-3.5 h-3.5" /> Alvo 2R (1:2):</span>
-              <strong>R$ {data.alvo_2r.toFixed(2)}</strong>
+              <strong>$ {data.alvo_2r.toFixed(2)}</strong>
             </div>
             <div className="flex items-center justify-between text-cyan-400">
               <span className="flex items-center gap-1"><Target className="w-3.5 h-3.5" /> Alvo 3R (1:3):</span>
-              <strong>R$ {data.alvo_3r.toFixed(2)}</strong>
+              <strong>$ {data.alvo_3r.toFixed(2)}</strong>
             </div>
           </div>
           <div className="pt-2 border-t border-slate-800 text-[11px] text-slate-400 text-center">

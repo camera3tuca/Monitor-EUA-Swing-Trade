@@ -1,6 +1,6 @@
 {
-  "name": "Monitor B3 - Swing Trade Pro",
-  "description": "Monitor de quedas de ativos da B3 (Ações, BDRs, ETFs) para Swing Trade com análise técnica, Triple Screen, Minervini, ML, RL e dados de mercado.",
+  "name": "Wall Street Scanner - Swing Trade Pro",
+  "description": "Scanner e monitor quantitativo para Swing Trade nas bolsas americanas (S&P 500, Nasdaq, NYSE, ETFs em US$) com análise técnica e IA preditiva por ScienceBit Computer.",
   "requestFramePermissions": [],
   "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
 }

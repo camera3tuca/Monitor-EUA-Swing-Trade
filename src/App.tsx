@@ -3,6 +3,8 @@ import { Header } from './components/Header';
 import { ScannerFilters } from './components/ScannerFilters';
 import { OpportunitiesTable } from './components/OpportunitiesTable';
 import { AssetDetailPanel, TabType } from './components/AssetDetailPanel';
+import { ScienceBitLogo } from './components/ScienceBitLogo';
+import { useLanguage } from './i18n/LanguageContext';
 
 import {
   AssetClass,
@@ -16,7 +18,10 @@ import {
   FlowResult,
   FundamentalsData,
   NewsArticle,
-  BacktestResult
+  BacktestResult,
+  MarketType,
+  MarketUniverse,
+  USUniverse
 } from './types';
 
 import {
@@ -55,8 +60,13 @@ import {
 } from 'lucide-react';
 
 export const App: React.FC = () => {
+  const { t } = useLanguage();
+
+  // Market Selection (USA is the only market)
+  const [market] = useState<MarketType>('usa');
+  const [selectedUSUniverse, setSelectedUSUniverse] = useState<USUniverse>('all');
+
   // Filters State
-  const [selectedClasses, setSelectedClasses] = useState<AssetClass[]>(['Ação', 'BDR', 'ETF']);
   const [selectedSector, setSelectedSector] = useState<string>('all');
   const [filterEMA20, setFilterEMA20] = useState<boolean>(false);
   const [filterEMA50, setFilterEMA50] = useState<boolean>(false);
@@ -67,7 +77,7 @@ export const App: React.FC = () => {
   // Scanner Data State
   const [opportunities, setOpportunities] = useState<AssetOpportunity[]>([]);
   const [isScanning, setIsScanning] = useState<boolean>(false);
-  const [selectedTicker, setSelectedTicker] = useState<string | null>('PETR4');
+  const [selectedTicker, setSelectedTicker] = useState<string | null>('NVDA');
 
   // Active Asset Analysis State
   const [timeframe, setTimeframe] = useState<string>('1d');
@@ -80,17 +90,6 @@ export const App: React.FC = () => {
   const [fundamentals, setFundamentals] = useState<FundamentalsData | null>(null);
   const [news, setNews] = useState<NewsArticle[]>([]);
 
-  // Toggle Asset Class filter
-  const handleToggleClass = (c: AssetClass) => {
-    if (selectedClasses.includes(c)) {
-      if (selectedClasses.length > 1) {
-        setSelectedClasses(selectedClasses.filter((item) => item !== c));
-      }
-    } else {
-      setSelectedClasses([...selectedClasses, c]);
-    }
-  };
-
   // Fetch opportunities scanner
   const fetchScanner = async () => {
     setIsScanning(true);
@@ -98,14 +97,20 @@ export const App: React.FC = () => {
       const res = await fetch(getApiUrl('/api/scan'), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ classes: selectedClasses })
+        body: JSON.stringify({
+          market: 'usa',
+          universe: selectedUSUniverse
+        })
       });
       if (res.ok) {
         const json = await res.json();
         if (json.data && Array.isArray(json.data)) {
           setOpportunities(json.data);
-          if (!selectedTicker && json.data.length > 0) {
-            setSelectedTicker(json.data[0].Ticker);
+          if (json.data.length > 0) {
+            const hasCurrent = json.data.some((d: AssetOpportunity) => d.Ticker === selectedTicker);
+            if (!hasCurrent) {
+              setSelectedTicker(json.data[0].Ticker);
+            }
           }
         }
       }
@@ -118,7 +123,7 @@ export const App: React.FC = () => {
 
   useEffect(() => {
     fetchScanner();
-  }, []);
+  }, [selectedUSUniverse]);
 
   // Fetch selected ticker historical candles and details
   useEffect(() => {
@@ -129,8 +134,10 @@ export const App: React.FC = () => {
 
     const loadData = async () => {
       try {
-        // Fetch historical candles
-        const histRes = await fetch(getApiUrl(`/api/history/${selectedTicker}?timeframe=${timeframe}&range=1y`));
+        // Fetch historical candles with market param
+        const histRes = await fetch(
+          getApiUrl(`/api/history/${selectedTicker}?timeframe=${timeframe}&range=1y&market=${market}`)
+        );
         if (histRes.ok && isMounted) {
           const histJson = await histRes.json();
           if (histJson.candles && Array.isArray(histJson.candles)) {
@@ -140,14 +147,14 @@ export const App: React.FC = () => {
         }
 
         // Fetch fundamentals
-        const fundRes = await fetch(getApiUrl(`/api/fundamentals/${selectedTicker}`));
+        const fundRes = await fetch(getApiUrl(`/api/fundamentals/${selectedTicker}?market=${market}`));
         if (fundRes.ok && isMounted) {
           const fundJson = await fundRes.json();
           setFundamentals(fundJson);
         }
 
         // Fetch news
-        const newsRes = await fetch(getApiUrl(`/api/news/${selectedTicker}`));
+        const newsRes = await fetch(getApiUrl(`/api/news/${selectedTicker}?market=${market}`));
         if (newsRes.ok && isMounted) {
           const newsJson = await newsRes.json();
           if (newsJson.artigos) {
@@ -166,7 +173,7 @@ export const App: React.FC = () => {
     return () => {
       isMounted = false;
     };
-  }, [selectedTicker, timeframe]);
+  }, [selectedTicker, timeframe, market]);
 
   // Available Sectors with counts
   const availableSectors = useMemo(() => {
@@ -181,7 +188,6 @@ export const App: React.FC = () => {
   // Filtered Opportunities List
   const filteredOpportunities = useMemo(() => {
     return opportunities.filter((op) => {
-      if (!selectedClasses.includes(op.Classe)) return false;
       if (selectedSector !== 'all' && (op.Setor || 'Outros') !== selectedSector) return false;
       if (op.Liquidez < minLiquidez) return false;
       if (filterEMA20 && (!op.EMA20 || typeof op.EMA20 !== 'number' || isNaN(op.EMA20) || op.Preco <= op.EMA20)) return false;
@@ -189,7 +195,7 @@ export const App: React.FC = () => {
       if (filterEMA200 && (!op.EMA200 || typeof op.EMA200 !== 'number' || isNaN(op.EMA200) || op.Preco <= op.EMA200)) return false;
       return true;
     });
-  }, [opportunities, selectedClasses, selectedSector, minLiquidez, filterEMA20, filterEMA50, filterEMA200]);
+  }, [opportunities, selectedSector, minLiquidez, filterEMA20, filterEMA50, filterEMA200]);
 
   // Selected Opportunity Object
   const selectedOpp = useMemo(() => {
@@ -233,8 +239,8 @@ export const App: React.FC = () => {
       <main className="flex-1 max-w-7xl w-full mx-auto px-4 lg:px-8 py-6 space-y-6">
         {/* Scanner Filters */}
         <ScannerFilters
-          selectedClasses={selectedClasses}
-          onToggleClass={handleToggleClass}
+          selectedUSUniverse={selectedUSUniverse}
+          onSelectUSUniverse={setSelectedUSUniverse}
           selectedSector={selectedSector}
           setSelectedSector={setSelectedSector}
           availableSectors={availableSectors}
@@ -294,21 +300,24 @@ export const App: React.FC = () => {
             <div className="flex flex-wrap items-center gap-2.5">
               <img
                 src="/icon.svg"
-                alt="Monitor B3"
+                alt="Wall Street Scanner"
                 className="w-6 h-6 rounded-lg border border-slate-700 bg-slate-950 p-0.5 flex-shrink-0"
               />
-              <span className="font-semibold text-slate-200">Monitor B3 - Swing Trade Pro</span>
+              <span className="font-semibold text-slate-200">
+                Wall Street Scanner Pro (S&P 500, Nasdaq, NYSE, ETFs)
+              </span>
               <span className="text-slate-600">•</span>
-              <span className="text-slate-400">Scanner &amp; Análise Quantitativa</span>
+              <span className="text-slate-400">{t('appSubtitle')}</span>
             </div>
             
-            <div className="flex items-center gap-3">
+            <div className="flex flex-wrap items-center gap-3">
+              <ScienceBitLogo variant="badge" size="sm" />
               <span className="bg-slate-800/80 border border-slate-750 text-slate-300 px-2.5 py-1 rounded-lg font-medium text-[11px]">
-                Versão 1.2 Pro
+                Versão 2.0 Wall Street Pro
               </span>
               <span className="text-slate-600 hidden sm:inline">|</span>
               <span className="text-slate-400">
-                © {new Date().getFullYear()} Monitor B3. Todos os direitos reservados.
+                © {new Date().getFullYear()} ScienceBit Computer. Todos os direitos reservados.
               </span>
             </div>
           </div>
@@ -316,23 +325,17 @@ export const App: React.FC = () => {
           <div className="bg-slate-800/40 border border-slate-700/60 rounded-xl p-4 text-[11px] leading-relaxed text-slate-400">
             <div className="flex items-center justify-between gap-2 mb-2 pb-2 border-b border-slate-750">
               <p className="font-semibold text-slate-300 flex items-center gap-1.5">
-                <span>⚠️ Aviso Legal, Direitos &amp; Declaração de Risco (Disclaimer)</span>
+                <span>⚠️ {t('disclaimerTitle')}</span>
               </p>
               <span className="text-[10px] bg-slate-800 border border-slate-700 text-slate-400 px-2 py-0.5 rounded">
                 Finalidade Educacional
               </span>
             </div>
             <p>
-              Este aplicativo e todas as suas análises, modelos estatísticos, projeções de aprendizado de máquina (Machine Learning), backtests e pontuações têm <strong>caráter estritamente educacional, analítico e informativo</strong>. Nenhuma informação apresentada constitui recomendação de compra, venda ou alocação de valores mobiliários, ações, BDRs, ETFs ou derivativos.
+              {t('disclaimerText')}
             </p>
             <p className="mt-1.5">
-              <strong>Desenvolvimento &amp; Conteúdo:</strong> Desenvolvido e mantido para fins de pesquisa quantitativa e educação financeira independente sobre o mercado de capitais brasileiro.
-            </p>
-            <p className="mt-1.5">
-              <strong>Isenção de Vínculo:</strong> Este é um software independente de análise quantitativa e educacional de mercado. Não possui qualquer afiliação, parceria, patrocínio ou vínculo institucional com a B3 S.A. – Brasil, Bolsa, Balcão, nem com quaisquer corretoras ou provedores de índices comerciais. Todas as marcas eventualmente citadas pertencem aos seus respectivos titulares e são mencionadas unicamente a título de referência contextual.
-            </p>
-            <p className="mt-1.5">
-              <strong>Fontes de Dados &amp; Cotações:</strong> As informações e cotações de mercado são obtidas através de feeds públicos com fins educacionais e podem apresentar atraso regulamentar (delayed quotes). Rentabilidade passada não representa garantia de retorno futuro. Antes de tomar qualquer decisão financeira, avalie seus objetivos e consulte um profissional de investimentos credenciado junto à CVM/ANBIMA.
+              <strong>Fontes de Dados &amp; Moedas:</strong> Cotações em dólares (US$) com dados de Wall Street (S&P 500, Nasdaq 100, Dow Jones, Russell 2000 e ETFs setoriais).
             </p>
           </div>
         </div>

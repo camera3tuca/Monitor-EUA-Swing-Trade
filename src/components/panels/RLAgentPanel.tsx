@@ -74,7 +74,7 @@ export const RLAgentPanel: React.FC<RLAgentPanelProps> = ({ data, ticker }) => {
             {data.acoes_recentes.map((a, i) => (
               <tr key={i} className="hover:bg-slate-800/40">
                 <td className="py-2 px-3 text-slate-300">{a.data}</td>
-                <td className="py-2 px-3 text-white font-semibold">R$ {a.preco.toFixed(2)}</td>
+                <td className="py-2 px-3 text-white font-semibold">$ {a.preco.toFixed(2)}</td>
                 <td className="py-2 px-3">
                   <span className={`px-2 py-0.5 rounded text-[11px] font-bold ${
                     a.acao === 'COMPRA'

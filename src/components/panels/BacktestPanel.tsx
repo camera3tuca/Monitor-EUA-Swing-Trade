@@ -77,9 +77,9 @@ export const BacktestPanel: React.FC<BacktestPanelProps> = ({ data, ticker }) =>
             {data.trades.map((t, i) => (
               <tr key={i} className="hover:bg-slate-800/40">
                 <td className="py-2 px-3 text-slate-300">{t.entrada_data}</td>
-                <td className="py-2 px-3 text-white">R$ {t.entrada_preco.toFixed(2)}</td>
+                <td className="py-2 px-3 text-white">$ {t.entrada_preco.toFixed(2)}</td>
                 <td className="py-2 px-3 text-slate-300">{t.saida_data}</td>
-                <td className="py-2 px-3 text-white">R$ {t.saida_preco.toFixed(2)}</td>
+                <td className="py-2 px-3 text-white">$ {t.saida_preco.toFixed(2)}</td>
                 <td className="py-2 px-3 text-slate-400">{t.dias} dias</td>
                 <td className="py-2 px-3">
                   <span className={`px-2 py-0.5 rounded text-[11px] font-bold ${

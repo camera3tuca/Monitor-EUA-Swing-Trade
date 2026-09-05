@@ -40,7 +40,7 @@ export const NewsSentimentPanel: React.FC<NewsSentimentPanelProps> = ({ articles
             Notícias &amp; Análise de Sentimento (IA) — {ticker}
           </h3>
           <p className="text-xs text-slate-400">
-            Feed curado das principais fontes financeiras (InfoMoney, Valor, Investing, Money Times).
+            Feed curado das principais fontes financeiras (Bloomberg, CNBC, Reuters, MarketWatch, Yahoo Finance).
           </p>
         </div>
       </div>

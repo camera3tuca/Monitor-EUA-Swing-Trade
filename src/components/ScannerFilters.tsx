@@ -1,11 +1,18 @@
 import React from 'react';
-import { RefreshCw, Filter, Layers, Droplets, Sparkles, PieChart, X } from 'lucide-react';
-import { AssetClass } from '../types';
+import { RefreshCw, Filter, Layers, Droplets, Sparkles, PieChart, X, Globe } from 'lucide-react';
+import { AssetClass, MarketType, USUniverse } from '../types';
 import { getSectorStyle } from '../utils/sectorUtils';
+import { useLanguage } from '../i18n/LanguageContext';
+
+export type { USUniverse };
 
 interface ScannerFiltersProps {
-  selectedClasses: AssetClass[];
-  onToggleClass: (classe: AssetClass) => void;
+  market?: MarketType;
+  selectedClasses?: AssetClass[];
+  onToggleClass?: (classe: AssetClass) => void;
+  selectedUSUniverse?: USUniverse;
+  setSelectedUSUniverse?: (u: USUniverse) => void;
+  onSelectUSUniverse?: (u: USUniverse) => void;
   selectedSector: string;
   setSelectedSector: (sector: string) => void;
   availableSectors: [string, number][];
@@ -26,8 +33,9 @@ interface ScannerFiltersProps {
 }
 
 export const ScannerFilters: React.FC<ScannerFiltersProps> = ({
-  selectedClasses,
-  onToggleClass,
+  selectedUSUniverse = 'all',
+  setSelectedUSUniverse,
+  onSelectUSUniverse,
   selectedSector,
   setSelectedSector,
   availableSectors,
@@ -46,7 +54,19 @@ export const ScannerFilters: React.FC<ScannerFiltersProps> = ({
   totalFiltered,
   totalTotal,
 }) => {
-  const classesList: AssetClass[] = ['Ação', 'BDR', 'ETF'];
+  const { t } = useLanguage();
+  const handleSelectUniverse = (u: USUniverse) => {
+    if (onSelectUSUniverse) onSelectUSUniverse(u);
+    if (setSelectedUSUniverse) setSelectedUSUniverse(u);
+  };
+
+  const usUniverseOptions: { key: USUniverse; labelKey: string }[] = [
+    { key: 'all', labelKey: t('allAssets') },
+    { key: 'sp500', labelKey: 'S&P 500' },
+    { key: 'nasdaq', labelKey: 'Nasdaq 100' },
+    { key: 'nyse', labelKey: 'NYSE' },
+    { key: 'etf', labelKey: 'ETFs (US$)' },
+  ];
 
   return (
     <div className="bg-slate-800/90 border border-slate-700/80 rounded-2xl p-4 lg:p-5 shadow-xl mb-6 space-y-4">
@@ -55,26 +75,27 @@ export const ScannerFilters: React.FC<ScannerFiltersProps> = ({
         {/* Left Side: Universe & Trend Filters */}
         <div className="flex flex-col sm:flex-row flex-wrap items-start sm:items-center gap-4 lg:gap-6">
           {/* Universo de Ativos */}
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 flex-wrap">
             <span className="text-xs font-semibold text-slate-400 uppercase tracking-wider flex items-center gap-1.5">
               <Layers className="w-3.5 h-3.5 text-blue-400" />
-              Universo:
+              {t('universe')}
             </span>
-            <div className="flex items-center gap-1.5">
-              {classesList.map((c) => {
-                const active = selectedClasses.includes(c);
+
+            <div className="flex items-center gap-1.5 flex-wrap">
+              {usUniverseOptions.map((opt) => {
+                const active = selectedUSUniverse === opt.key;
                 return (
                   <button
-                    key={c}
-                    id={`btn-filter-class-${c.toLowerCase()}`}
-                    onClick={() => onToggleClass(c)}
+                    key={opt.key}
+                    id={`btn-filter-us-universe-${opt.key}`}
+                    onClick={() => handleSelectUniverse(opt.key)}
                     className={`px-3 py-1 text-xs font-bold rounded-lg transition border cursor-pointer ${
                       active
                         ? 'bg-blue-600 border-blue-500 text-white shadow-md shadow-blue-900/30'
                         : 'bg-slate-900/60 border-slate-700 text-slate-400 hover:text-slate-200 hover:border-slate-600'
                     }`}
                   >
-                    {c}s
+                    {opt.labelKey}
                   </button>
                 );
               })}
@@ -85,7 +106,7 @@ export const ScannerFilters: React.FC<ScannerFiltersProps> = ({
           <div className="flex flex-wrap items-center gap-3 bg-slate-900/70 px-3.5 py-1.5 rounded-xl border border-slate-700/70 text-xs">
             <span className="text-slate-400 font-semibold flex items-center gap-1">
               <Filter className="w-3.5 h-3.5 text-amber-400" />
-              Tendência:
+              {t('trendFilter')}
             </span>
             <label className="flex items-center gap-1.5 cursor-pointer text-slate-300 hover:text-white select-none">
               <input
@@ -95,7 +116,7 @@ export const ScannerFilters: React.FC<ScannerFiltersProps> = ({
                 onChange={(e) => setFilterEMA20(e.target.checked)}
                 className="w-3.5 h-3.5 accent-blue-500 rounded cursor-pointer"
               />
-              <span>&gt; EMA20</span>
+              <span>{t('aboveEma20')}</span>
             </label>
             <label className="flex items-center gap-1.5 cursor-pointer text-slate-300 hover:text-white select-none">
               <input
@@ -105,7 +126,7 @@ export const ScannerFilters: React.FC<ScannerFiltersProps> = ({
                 onChange={(e) => setFilterEMA50(e.target.checked)}
                 className="w-3.5 h-3.5 accent-blue-500 rounded cursor-pointer"
               />
-              <span>&gt; EMA50</span>
+              <span>{t('aboveEma50')}</span>
             </label>
             <label className="flex items-center gap-1.5 cursor-pointer text-slate-300 hover:text-white select-none">
               <input
@@ -115,14 +136,14 @@ export const ScannerFilters: React.FC<ScannerFiltersProps> = ({
                 onChange={(e) => setFilterEMA200(e.target.checked)}
                 className="w-3.5 h-3.5 accent-blue-500 rounded cursor-pointer"
               />
-              <span>&gt; EMA200 (Tendência Maior)</span>
+              <span>{t('aboveEma200')}</span>
             </label>
           </div>
 
           {/* Slider de Liquidez Mínima */}
           <div className="flex items-center gap-2.5 bg-slate-900/70 px-3.5 py-1.5 rounded-xl border border-slate-700/70 text-xs">
             <Droplets className="w-3.5 h-3.5 text-cyan-400" />
-            <span className="text-slate-400 font-medium">Liquidez:</span>
+            <span className="text-slate-400 font-medium">{t('liquidity')}</span>
             <input
               id="slider-min-liquidez"
               type="range"
@@ -145,7 +166,7 @@ export const ScannerFilters: React.FC<ScannerFiltersProps> = ({
               className="w-3.5 h-3.5 accent-purple-500 rounded cursor-pointer"
             />
             <Sparkles className="w-3.5 h-3.5 text-purple-400" />
-            <span>Validação Histórica</span>
+            <span>{t('historicalValidation')}</span>
           </label>
         </div>
 
@@ -153,7 +174,7 @@ export const ScannerFilters: React.FC<ScannerFiltersProps> = ({
         <div className="flex items-center justify-between sm:justify-end gap-3 pt-2 lg:pt-0 border-t lg:border-t-0 border-slate-700/60">
           <div className="text-right">
             <div className="text-xs text-slate-400">
-              Mostrando <strong className="text-emerald-400 font-mono font-bold">{totalFiltered}</strong> de {totalTotal} ativos em queda
+              {t('showingAssets')} <strong className="text-emerald-400 font-mono font-bold">{totalFiltered}</strong> {t('ofTotalDropping')} ({totalTotal})
             </div>
           </div>
 
@@ -164,7 +185,7 @@ export const ScannerFilters: React.FC<ScannerFiltersProps> = ({
             className="flex items-center gap-2 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 disabled:opacity-50 text-white font-bold text-xs px-4 py-2 rounded-xl shadow-lg shadow-blue-900/40 transition cursor-pointer"
           >
             <RefreshCw className={`w-3.5 h-3.5 ${isScanning ? 'animate-spin' : ''}`} />
-            <span>{isScanning ? 'Escanear...' : 'Atualizar Análise'}</span>
+            <span>{isScanning ? t('scanning') : t('scanBtn')}</span>
           </button>
         </div>
       </div>
@@ -173,7 +194,7 @@ export const ScannerFilters: React.FC<ScannerFiltersProps> = ({
       <div className="pt-3 border-t border-slate-700/60 flex flex-col md:flex-row md:items-center gap-3">
         <div className="flex items-center gap-2 text-xs font-semibold text-slate-400 uppercase tracking-wider shrink-0">
           <PieChart className="w-3.5 h-3.5 text-indigo-400" />
-          <span>Filtrar por Setor:</span>
+          <span>{t('filterBySector')}</span>
         </div>
 
         {/* Sector Quick Chips */}
@@ -187,7 +208,7 @@ export const ScannerFilters: React.FC<ScannerFiltersProps> = ({
                 : 'bg-slate-900/60 border-slate-700/80 text-slate-400 hover:text-slate-200 hover:border-slate-600'
             }`}
           >
-            Todos ({totalTotal})
+            {t('allSectors')} ({totalTotal})
           </button>
 
           {availableSectors.map(([sectorName, count]) => {
@@ -216,10 +237,10 @@ export const ScannerFilters: React.FC<ScannerFiltersProps> = ({
               id="btn-clear-sector-filter"
               onClick={() => setSelectedSector('all')}
               className="inline-flex items-center gap-1 px-2 py-1 text-xs text-rose-400 hover:text-rose-300 hover:bg-rose-500/10 rounded-lg border border-rose-500/20 transition cursor-pointer"
-              title="Limpar filtro de setor"
+              title={t('clearFilter')}
             >
               <X className="w-3 h-3" />
-              <span>Limpar</span>
+              <span>{t('clearFilter')}</span>
             </button>
           )}
         </div>

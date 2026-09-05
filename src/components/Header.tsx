@@ -1,6 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { TrendingDown, Clock, Info, ShieldCheck, ChevronDown, ChevronUp, BookOpen, Sparkles, Globe, ExternalLink } from 'lucide-react';
+import { Clock, ShieldCheck, ChevronDown, ChevronUp, BookOpen, Sparkles, Globe, DollarSign } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
+import { useLanguage } from '../i18n/LanguageContext';
+import { MarketUniverse } from '../types';
+import { ScienceBitLogo } from './ScienceBitLogo';
 
 interface MarketStatus {
   status: 'aberta' | 'pre-abertura' | 'leilao' | 'fechada';
@@ -10,12 +13,19 @@ interface MarketStatus {
   dotClass: string;
 }
 
-export const Header: React.FC = () => {
-  const [horaBrasilia, setHoraBrasilia] = useState<string>('');
+interface HeaderProps {
+  market?: MarketUniverse;
+  onMarketChange?: (m: MarketUniverse) => void;
+  onSelectMarket?: (m: MarketUniverse) => void;
+}
+
+export const Header: React.FC<HeaderProps> = () => {
+  const { language, setLanguage, t } = useLanguage();
+  const [timeStr, setTimeStr] = useState<string>('');
   const [marketStatus, setMarketStatus] = useState<MarketStatus>({
     status: 'fechada',
-    label: 'Bolsa Fechada',
-    sublabel: 'Abre às 10:00',
+    label: 'Market Closed',
+    sublabel: 'Opens at 09:30 ET',
     badgeClass: 'bg-rose-500/10 border-rose-500/30 text-rose-300',
     dotClass: 'bg-rose-500',
   });
@@ -25,143 +35,176 @@ export const Header: React.FC = () => {
     const updateTimeAndMarket = () => {
       try {
         const now = new Date();
-        const str = now.toLocaleTimeString('pt-BR', {
-          timeZone: 'America/Sao_Paulo',
+        const timeZone = 'America/New_York';
+        const str = now.toLocaleTimeString(language === 'pt' ? 'pt-BR' : 'en-US', {
+          timeZone,
           hour: '2-digit',
           minute: '2-digit',
           second: '2-digit',
         });
-        setHoraBrasilia(str);
+        setTimeStr(str);
 
-        // Get Brasilia date/hours
-        const brasiliaDateStr = now.toLocaleString('en-US', { timeZone: 'America/Sao_Paulo' });
-        const brasiliaDate = new Date(brasiliaDateStr);
-        const dayOfWeek = brasiliaDate.getDay(); // 0 = Sun, 6 = Sat
-        const hours = brasiliaDate.getHours();
-        const minutes = brasiliaDate.getMinutes();
+        // Get local time in New York (ET)
+        const dateInTz = new Date(now.toLocaleString('en-US', { timeZone }));
+        const dayOfWeek = dateInTz.getDay(); // 0 = Sun, 6 = Sat
+        const hours = dateInTz.getHours();
+        const minutes = dateInTz.getMinutes();
         const totalMinutes = hours * 60 + minutes;
 
-        // B3 Market Hours Logic (Brasília):
-        // Weekend
         if (dayOfWeek === 0 || dayOfWeek === 6) {
           setMarketStatus({
             status: 'fechada',
-            label: 'Bolsa Fechada',
-            sublabel: 'Fim de semana (Abre seg 10h)',
+            label: t('marketClosed'),
+            sublabel: t('weekendClosed'),
             badgeClass: 'bg-slate-700/50 border-slate-600/60 text-slate-300',
             dotClass: 'bg-slate-500',
           });
-        } else if (totalMinutes >= 600 && totalMinutes < 1015) {
-          // 10:00 (600 min) to 16:55 (1015 min) -> Pregão Regular
-          setMarketStatus({
-            status: 'aberta',
-            label: 'Bolsa Aberta',
-            sublabel: 'Pregão B3 ao vivo (10h - 17h)',
-            badgeClass: 'bg-emerald-500/15 border-emerald-500/40 text-emerald-300',
-            dotClass: 'bg-emerald-400 animate-pulse',
-          });
-        } else if (totalMinutes >= 585 && totalMinutes < 600) {
-          // 09:45 to 10:00 -> Pré-Abertura
-          setMarketStatus({
-            status: 'pre-abertura',
-            label: 'Pré-Abertura',
-            sublabel: 'Leilão inicial de abertura',
-            badgeClass: 'bg-amber-500/15 border-amber-500/40 text-amber-300',
-            dotClass: 'bg-amber-400 animate-ping',
-          });
-        } else if (totalMinutes >= 1015 && totalMinutes < 1020) {
-          // 16:55 to 17:00 -> Leilão de fechamento
-          setMarketStatus({
-            status: 'leilao',
-            label: 'Leilão Fechamento',
-            sublabel: 'Call de fechamento das ações',
-            badgeClass: 'bg-amber-500/15 border-amber-500/40 text-amber-300',
-            dotClass: 'bg-amber-400',
-          });
-        } else if (totalMinutes >= 1020 && totalMinutes < 1080) {
-          // 17:00 to 18:00 -> After-Market
-          setMarketStatus({
-            status: 'leilao',
-            label: 'After-Market B3',
-            sublabel: 'Pós-mercado até 18:00',
-            badgeClass: 'bg-blue-500/15 border-blue-500/40 text-blue-300',
-            dotClass: 'bg-blue-400',
-          });
         } else {
-          // Fechada (Durante a noite / madrugada)
-          const info = totalMinutes < 585 ? 'Abre às 10:00' : 'Reabre amanhã às 10:00';
-          setMarketStatus({
-            status: 'fechada',
-            label: 'Bolsa Fechada',
-            sublabel: info,
-            badgeClass: 'bg-rose-500/10 border-rose-500/30 text-rose-300',
-            dotClass: 'bg-rose-400',
-          });
+          // US Market Hours (ET):
+          // Pre-Market: 04:00 (240) - 09:30 (570)
+          // Regular Session: 09:30 (570) - 16:00 (960)
+          // After-Hours: 16:00 (960) - 20:00 (1200)
+          if (totalMinutes >= 570 && totalMinutes < 960) {
+            setMarketStatus({
+              status: 'aberta',
+              label: t('marketOpen'),
+              sublabel: t('regularSession'),
+              badgeClass: 'bg-emerald-500/15 border-emerald-500/40 text-emerald-300',
+              dotClass: 'bg-emerald-400 animate-pulse',
+            });
+          } else if (totalMinutes >= 240 && totalMinutes < 570) {
+            setMarketStatus({
+              status: 'pre-abertura',
+              label: t('preMarket'),
+              sublabel: 'Pre-Market (NYSE/Nasdaq)',
+              badgeClass: 'bg-amber-500/15 border-amber-500/40 text-amber-300',
+              dotClass: 'bg-amber-400 animate-ping',
+            });
+          } else if (totalMinutes >= 960 && totalMinutes < 1200) {
+            setMarketStatus({
+              status: 'leilao',
+              label: t('afterHours'),
+              sublabel: 'Post-market until 20:00 ET',
+              badgeClass: 'bg-blue-500/15 border-blue-500/40 text-blue-300',
+              dotClass: 'bg-blue-400',
+            });
+          } else {
+            setMarketStatus({
+              status: 'fechada',
+              label: t('marketClosed'),
+              sublabel: t('opensAt'),
+              badgeClass: 'bg-rose-500/10 border-rose-500/30 text-rose-300',
+              dotClass: 'bg-rose-400',
+            });
+          }
         }
       } catch {
-        setHoraBrasilia(new Date().toLocaleTimeString('pt-BR'));
+        setTimeStr(new Date().toLocaleTimeString());
       }
     };
     updateTimeAndMarket();
     const interval = setInterval(updateTimeAndMarket, 1000);
     return () => clearInterval(interval);
-  }, []);
+  }, [language, t]);
 
   return (
-    <header className="bg-slate-800/80 backdrop-blur-md border-b border-slate-700/60 sticky top-0 z-30 px-4 lg:px-8 py-3.5 shadow-lg">
+    <header className="bg-slate-800/90 backdrop-blur-md border-b border-slate-700/70 sticky top-0 z-30 px-4 lg:px-8 py-3.5 shadow-lg">
       <div className="max-w-7xl mx-auto flex flex-col md:flex-row md:items-center md:justify-between gap-4">
         {/* Title & Brand */}
-        <div className="flex items-center gap-3">
-          <img
-            src="/icon.svg"
-            alt="Monitor B3 Logo"
-            className="w-11 h-11 rounded-xl shadow-lg border border-slate-700/80 bg-slate-900 object-cover flex-shrink-0"
-          />
+        <div className="flex items-center gap-3.5">
+          {/* Brand Logo Group */}
+          <div className="flex items-center gap-2.5 shrink-0">
+            <div className="relative group flex items-center justify-center">
+              <div className="absolute -inset-0.5 bg-gradient-to-r from-blue-600 via-indigo-500 to-emerald-500 rounded-xl blur opacity-50 group-hover:opacity-80 transition duration-300"></div>
+              <img
+                src="/icon.svg"
+                alt="Wall Street Scanner"
+                className="relative w-10 h-10 md:w-11 md:h-11 rounded-xl border border-blue-400/50 bg-slate-950 p-1 shadow-lg object-contain"
+              />
+            </div>
+            <ScienceBitLogo variant="badge" size="sm" className="hidden sm:inline-flex" />
+          </div>
+
+          <div className="hidden sm:block h-8 w-px bg-slate-700/70" />
+
           <div>
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2 flex-wrap">
               <h1 className="text-xl md:text-2xl font-extrabold text-white tracking-tight">
-                Monitor B3 <span className="text-blue-400 font-medium text-lg">Swing Trade Pro</span>
+                Wall Street Scanner <span className="text-blue-400 font-medium text-lg">Swing Trade Pro</span>
               </h1>
               <span className="bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 text-[11px] font-semibold px-2 py-0.5 rounded-full">
-                Ao Vivo
+                {t('live')}
+              </span>
+              <span className="bg-blue-500/20 text-blue-300 border border-blue-500/30 text-[10px] font-bold px-2 py-0.5 rounded-full">
+                US$ • S&P 500 / NASDAQ / NYSE / ETFs
               </span>
             </div>
-            <p className="text-xs text-slate-400 font-medium">
-              Análise Técnica Avançada | Rastreamento de Oportunidades em Tempo Real
+            <p className="text-xs text-slate-400 font-medium flex items-center gap-2 flex-wrap">
+              <span>
+                {language === 'pt' ? 'Rastreamento em tempo real de ações e ETFs americanos em sobrevenda técnica' : 'Real-time technical screening for oversold US stocks and ETFs'}
+              </span>
+              <span className="text-slate-600 hidden md:inline">•</span>
+              <span className="text-slate-400 hidden md:inline">por ScienceBit Computer</span>
             </p>
           </div>
         </div>
 
-        {/* Right Status Pill Metrics */}
+        {/* Right Status Controls & Actions */}
         <div className="flex flex-wrap items-center gap-2 text-xs">
+          {/* US Markets Badge */}
+          <div className="flex items-center gap-1.5 bg-slate-900/90 border border-blue-500/30 px-2.5 py-1.5 rounded-xl text-blue-300 font-semibold shadow-inner">
+            <span className="text-sm">🇺🇸</span>
+            <span>Wall Street (US$)</span>
+          </div>
+
+          {/* Language Switcher: PT / EN */}
+          <div className="flex items-center bg-slate-900/90 border border-slate-700/80 p-0.5 rounded-xl shadow-inner">
+            <button
+              id="btn-lang-pt"
+              type="button"
+              onClick={() => setLanguage('pt')}
+              className={`px-2.5 py-1.5 rounded-lg font-bold text-xs transition cursor-pointer ${
+                language === 'pt'
+                  ? 'bg-emerald-600 text-white shadow-sm'
+                  : 'text-slate-400 hover:text-slate-200'
+              }`}
+              title="Português"
+            >
+              PT
+            </button>
+            <button
+              id="btn-lang-en"
+              type="button"
+              onClick={() => setLanguage('en')}
+              className={`px-2.5 py-1.5 rounded-lg font-bold text-xs transition cursor-pointer ${
+                language === 'en'
+                  ? 'bg-emerald-600 text-white shadow-sm'
+                  : 'text-slate-400 hover:text-slate-200'
+              }`}
+              title="English"
+            >
+              EN
+            </button>
+          </div>
+
           {/* Market Status (Bolsa Aberta / Fechada) */}
           <div
             id="market-status-badge"
-            title={`Status B3: ${marketStatus.label} - ${marketStatus.sublabel}`}
+            title={`${marketStatus.label} - ${marketStatus.sublabel}`}
             className={`flex items-center gap-2 border px-3 py-1.5 rounded-lg font-medium shadow-sm transition ${marketStatus.badgeClass}`}
           >
             <span className={`w-2 h-2 rounded-full ${marketStatus.dotClass}`}></span>
             <div className="flex flex-col sm:flex-row sm:items-center sm:gap-1.5 leading-tight">
               <span className="font-bold">{marketStatus.label}</span>
-              <span className="text-[10px] opacity-75 font-normal">({marketStatus.sublabel})</span>
+              <span className="text-[10px] opacity-75 font-normal">(NYSE/Nasdaq)</span>
             </div>
           </div>
 
-          {/* Horário de Brasília */}
+          {/* Local Market Clock */}
           <div className="flex items-center gap-1.5 bg-slate-900/80 border border-slate-700/80 px-3 py-1.5 rounded-lg text-slate-300">
             <Clock className="w-3.5 h-3.5 text-blue-400" />
-            <span className="font-mono text-emerald-400 font-semibold">{horaBrasilia || '--:--:--'}</span>
-            <span className="text-[10px] text-slate-500">(Brasília)</span>
-          </div>
-
-          <div className="hidden sm:flex items-center gap-1.5 bg-slate-900/80 border border-slate-700/80 px-3 py-1.5 rounded-lg text-slate-300">
-            <ShieldCheck className="w-3.5 h-3.5 text-emerald-400" />
-            <span>Estratégia: <strong className="text-white">Reversão Sobrevenda</strong></span>
-          </div>
-
-          <div className="hidden lg:flex items-center gap-1.5 bg-slate-900/80 border border-slate-700/80 px-3 py-1.5 rounded-lg text-slate-300">
-            <Sparkles className="w-3.5 h-3.5 text-amber-400" />
-            <span>Timeframe: <strong className="text-white">Diário / 6M</strong></span>
+            <span className="font-mono text-emerald-400 font-semibold">{timeStr || '--:--:--'}</span>
+            <span className="text-[10px] text-slate-500">NY (ET)</span>
           </div>
 
           {/* Guide toggle button */}
@@ -171,21 +214,9 @@ export const Header: React.FC = () => {
             className="flex items-center gap-1.5 bg-blue-600/20 hover:bg-blue-600/30 border border-blue-500/40 text-blue-300 hover:text-blue-200 px-3 py-1.5 rounded-lg font-medium transition cursor-pointer"
           >
             <BookOpen className="w-3.5 h-3.5" />
-            <span>Guia de Indicadores</span>
+            <span>{t('guideBtn')}</span>
             {guiaAberto ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
           </button>
-
-          {/* App Brand Badge with Logo */}
-          <div
-            id="brand-logo-badge"
-            className="flex items-center gap-2 bg-slate-900/90 border border-slate-700/80 px-3 py-1.5 rounded-lg text-slate-300 shadow-sm"
-          >
-            <img src="/icon.svg" alt="Monitor B3" className="w-4 h-4 rounded flex-shrink-0" />
-            <span className="font-semibold text-white tracking-wide">Monitor B3</span>
-            <span className="bg-blue-500/25 text-blue-300 text-[10px] font-bold px-1.5 py-0.5 rounded border border-blue-500/30">
-              PRO
-            </span>
-          </div>
         </div>
       </div>
 
@@ -202,49 +233,49 @@ export const Header: React.FC = () => {
               <div className="bg-slate-900/70 p-3 rounded-xl border border-slate-700/60">
                 <h4 className="font-bold text-blue-400 mb-1 flex items-center gap-1.5">
                   <span className="w-2 h-2 rounded-full bg-blue-400"></span>
-                  Índice de Sobrevenda (IS)
+                  {t('guideIS')}
                 </h4>
                 <p className="text-slate-300 leading-relaxed">
-                  Média harmônica combinada do RSI(14) e Estocástico(14). Valores <strong className="text-emerald-400">&gt; 70</strong> indicam exaustão vendedora e potencial repique.
+                  {t('guideISDesc')}
                 </p>
               </div>
 
               <div className="bg-slate-900/70 p-3 rounded-xl border border-slate-700/60">
                 <h4 className="font-bold text-emerald-400 mb-1 flex items-center gap-1.5">
                   <span className="w-2 h-2 rounded-full bg-emerald-400"></span>
-                  RSI &amp; Estocástico
+                  {t('guideRSI')}
                 </h4>
                 <p className="text-slate-300 leading-relaxed">
-                  RSI &lt; 30 e Estocástico &lt; 20 confirmam sobrevenda técnica extrema. Cruzamentos para cima geram gatilho imediato de compra.
+                  {t('guideRSIDesc')}
                 </p>
               </div>
 
               <div className="bg-slate-900/70 p-3 rounded-xl border border-slate-700/60">
                 <h4 className="font-bold text-amber-400 mb-1 flex items-center gap-1.5">
                   <span className="w-2 h-2 rounded-full bg-amber-400"></span>
-                  Fibonacci (61.8% Golden Zone)
+                  {t('guideFibo')}
                 </h4>
                 <p className="text-slate-300 leading-relaxed">
-                  A retração de 61.8% representa a mais forte região de suporte matemático para continuação da tendência primária.
+                  {t('guideFiboDesc')}
                 </p>
               </div>
 
               <div className="bg-slate-900/70 p-3 rounded-xl border border-slate-700/60">
                 <h4 className="font-bold text-purple-400 mb-1 flex items-center gap-1.5">
                   <span className="w-2 h-2 rounded-full bg-purple-400"></span>
-                  Triple Screen (Alexander Elder)
+                  {t('guideTriple')}
                 </h4>
                 <p className="text-slate-300 leading-relaxed">
-                  1ª Tela (Maré: EMA13), 2ª Tela (Onda: EFI2 oscilador) e 3ª Tela (Execução: Buy Stop no topo anterior).
+                  {t('guideTripleDesc')}
                 </p>
               </div>
             </div>
 
             <div className="mt-2 pt-2 border-t border-slate-800 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1 text-[11px] text-slate-400 px-1">
-              <span>Metodologias quantitativas aplicadas aos ativos da B3 (Ações, BDRs e ETFs).</span>
+              <span>{t('guideMethodology')}</span>
               <span className="text-slate-300 font-medium flex items-center gap-1.5">
                 <ShieldCheck className="w-3.5 h-3.5 text-emerald-400" />
-                Módulo de Estratégias &amp; Filtros Técnicos
+                <span>Wall Street Quantitative Swing Trade Engine</span>
               </span>
             </div>
           </motion.div>

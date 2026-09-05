@@ -37,14 +37,14 @@ export const MLPredictionPanel: React.FC<MLPredictionPanelProps> = ({ data, tick
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-5">
         <div className="bg-slate-900/80 border border-slate-700/70 rounded-xl p-4 font-mono">
           <div className="text-xs text-slate-400 mb-1">Preço Atual</div>
-          <div className="text-2xl font-bold text-white">R$ {data.preco_atual.toFixed(2)}</div>
+          <div className="text-2xl font-bold text-white">$ {data.preco_atual.toFixed(2)}</div>
         </div>
 
         <div className="bg-slate-900/80 border border-slate-700/70 rounded-xl p-4 font-mono">
           <div className="text-xs text-slate-400 mb-1 flex items-center gap-1">
             <Target className="w-3.5 h-3.5 text-indigo-400" /> Alvo Preditivo D+5
           </div>
-          <div className="text-2xl font-bold text-indigo-300">R$ {data.preco_previsto_5d.toFixed(2)}</div>
+          <div className="text-2xl font-bold text-indigo-300">$ {data.preco_previsto_5d.toFixed(2)}</div>
         </div>
 
         <div className="bg-slate-900/80 border border-slate-700/70 rounded-xl p-4 font-mono">
@@ -65,9 +65,9 @@ export const MLPredictionPanel: React.FC<MLPredictionPanelProps> = ({ data, tick
         {data.previsoes_dias.map((p) => (
           <div key={p.dia} className="bg-slate-900/90 border border-slate-700/80 rounded-xl p-2.5 text-center font-mono">
             <div className="text-[11px] font-bold text-indigo-400 mb-1">{p.data}</div>
-            <div className="text-sm font-bold text-white mb-1">R$ {p.preco.toFixed(2)}</div>
+            <div className="text-sm font-bold text-white mb-1">$ {p.preco.toFixed(2)}</div>
             <div className="text-[10px] text-slate-400 border-t border-slate-800 pt-1">
-              R$ {p.limite_inf.toFixed(2)} ~ {p.limite_sup.toFixed(2)}
+              $ {p.limite_inf.toFixed(2)} ~ {p.limite_sup.toFixed(2)}
             </div>
           </div>
         ))}

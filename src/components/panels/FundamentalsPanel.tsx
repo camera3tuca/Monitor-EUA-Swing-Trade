@@ -10,9 +10,9 @@ interface FundamentalsPanelProps {
 export const FundamentalsPanel: React.FC<FundamentalsPanelProps> = ({ data, ticker }) => {
   const formatMktCap = (v?: number) => {
     if (!v) return '-';
-    if (v >= 1e12) return `R$ ${(v / 1e12).toFixed(2)} Tri`;
-    if (v >= 1e9) return `R$ ${(v / 1e9).toFixed(1)} Bi`;
-    return `R$ ${(v / 1e6).toFixed(0)} Mi`;
+    if (v >= 1e12) return `$ ${(v / 1e12).toFixed(2)} Tri`;
+    if (v >= 1e9) return `$ ${(v / 1e9).toFixed(1)} Bi`;
+    return `$ ${(v / 1e6).toFixed(0)} Mi`;
   };
 
   return (

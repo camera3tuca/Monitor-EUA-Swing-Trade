@@ -22,6 +22,8 @@ import { BacktestPanel } from './panels/BacktestPanel';
 import { FundamentalsPanel } from './panels/FundamentalsPanel';
 import { NewsSentimentPanel } from './panels/NewsSentimentPanel';
 import { getSectorStyle } from '../utils/sectorUtils';
+import { useLanguage } from '../i18n/LanguageContext';
+import { formatCurrency } from '../utils/currencyUtils';
 import {
   BarChart2,
   Compass,
@@ -74,6 +76,9 @@ export const AssetDetailPanel: React.FC<AssetDetailPanelProps> = ({
   news,
   onClose
 }) => {
+  const { t } = useLanguage();
+  const currency = selectedOpp.currency || 'USD';
+
   return (
     <div id="asset-detail-section" className="space-y-4 p-2 sm:p-4 bg-slate-900/95 border border-blue-500/40 rounded-xl shadow-xl w-full max-w-full overflow-hidden transition-all duration-300">
       {/* Asset Header Banner */}
@@ -85,6 +90,11 @@ export const AssetDetailPanel: React.FC<AssetDetailPanelProps> = ({
           <div>
             <div className="flex items-center gap-2 flex-wrap">
               <h2 className="text-xl font-extrabold text-white font-mono">{selectedOpp.Ticker}</h2>
+              {selectedOpp.exchange && (
+                <span className="bg-blue-600/30 text-blue-200 border border-blue-500/40 text-xs px-2 py-0.5 rounded font-bold">
+                  {selectedOpp.exchange}
+                </span>
+              )}
               <span className="bg-slate-700 text-slate-300 text-xs px-2 py-0.5 rounded font-semibold">
                 {selectedOpp.Classe}
               </span>
@@ -95,7 +105,7 @@ export const AssetDetailPanel: React.FC<AssetDetailPanelProps> = ({
                 </span>
               )}
               <span className="bg-rose-500/20 text-rose-300 border border-rose-500/30 text-xs font-bold px-2 py-0.5 rounded">
-                {selectedOpp.Queda_Dia.toFixed(2)}% hoje
+                {selectedOpp.Queda_Dia.toFixed(2)}%
               </span>
               {selectedOpp.Gap !== 0 && (
                 <span className="bg-amber-500/20 text-amber-300 border border-amber-500/30 text-xs font-mono px-2 py-0.5 rounded">
@@ -110,10 +120,10 @@ export const AssetDetailPanel: React.FC<AssetDetailPanelProps> = ({
         {/* Fast Stats Bar & Close Button */}
         <div className="flex flex-wrap items-center gap-2 sm:gap-3 text-xs font-mono">
           <div className="bg-slate-900/90 border border-slate-700 px-3 py-1.5 rounded-xl">
-            <span className="text-slate-400">Preço:</span> <strong className="text-white">R$ {selectedOpp.Preco.toFixed(2)}</strong>
+            <span className="text-slate-400">{t('price')}:</span> <strong className="text-white">{formatCurrency(selectedOpp.Preco, currency)}</strong>
           </div>
           <div className="bg-slate-900/90 border border-slate-700 px-3 py-1.5 rounded-xl">
-            <span className="text-slate-400">I.S.:</span> <strong className="text-emerald-400">{selectedOpp.IS}</strong>
+            <span className="text-slate-400">{t('colIS')}:</span> <strong className="text-emerald-400">{selectedOpp.IS}</strong>
           </div>
           <div className="bg-slate-900/90 border border-slate-700 px-3 py-1.5 rounded-xl">
             <span className="text-slate-400">RSI(14):</span> <strong className={selectedOpp.RSI14 < 30 ? 'text-emerald-400' : 'text-slate-300'}>{selectedOpp.RSI14}</strong>
@@ -127,10 +137,10 @@ export const AssetDetailPanel: React.FC<AssetDetailPanelProps> = ({
               type="button"
               onClick={onClose}
               className="ml-auto md:ml-2 p-1.5 bg-slate-700/60 hover:bg-rose-600/80 hover:text-white text-slate-300 rounded-xl transition cursor-pointer flex items-center gap-1 text-xs font-sans font-semibold"
-              title="Fechar painel do ativo"
+              title={t('closeAnalysis')}
             >
               <X className="w-4 h-4" />
-              <span className="hidden sm:inline">Fechar</span>
+              <span className="hidden sm:inline">{t('closeAnalysis')}</span>
             </button>
           )}
         </div>
@@ -149,7 +159,7 @@ export const AssetDetailPanel: React.FC<AssetDetailPanelProps> = ({
           }`}
         >
           <BarChart2 className="w-4 h-4" />
-          <span>Gráfico Técnico &amp; Fibonacci</span>
+          <span>{t('tabChart')}</span>
         </button>
 
         <button
@@ -163,7 +173,7 @@ export const AssetDetailPanel: React.FC<AssetDetailPanelProps> = ({
           }`}
         >
           <Compass className="w-4 h-4" />
-          <span>Multi-Timeframe (3 Telas)</span>
+          <span>{t('tabTripleScreen')}</span>
         </button>
 
         <button
@@ -177,7 +187,7 @@ export const AssetDetailPanel: React.FC<AssetDetailPanelProps> = ({
           }`}
         >
           <Award className="w-4 h-4" />
-          <span>Filtro de Tendência &amp; Fases</span>
+          <span>{t('tabMinervini')}</span>
         </button>
 
         <button
@@ -191,7 +201,7 @@ export const AssetDetailPanel: React.FC<AssetDetailPanelProps> = ({
           }`}
         >
           <Activity className="w-4 h-4" />
-          <span>Fluxo &amp; Volume Institucional</span>
+          <span>{t('tabFlow')}</span>
         </button>
 
         <button
@@ -205,7 +215,7 @@ export const AssetDetailPanel: React.FC<AssetDetailPanelProps> = ({
           }`}
         >
           <Brain className="w-4 h-4" />
-          <span>ML Preditivo (5D)</span>
+          <span>{t('tabML')}</span>
         </button>
 
         <button
@@ -219,7 +229,7 @@ export const AssetDetailPanel: React.FC<AssetDetailPanelProps> = ({
           }`}
         >
           <Bot className="w-4 h-4" />
-          <span>Agente RL (Q-Learning)</span>
+          <span>{t('tabRL')}</span>
         </button>
 
         <button
@@ -233,7 +243,7 @@ export const AssetDetailPanel: React.FC<AssetDetailPanelProps> = ({
           }`}
         >
           <History className="w-4 h-4" />
-          <span>Backtest Histórico</span>
+          <span>{t('tabBacktest')}</span>
         </button>
 
         <button
@@ -247,7 +257,7 @@ export const AssetDetailPanel: React.FC<AssetDetailPanelProps> = ({
           }`}
         >
           <Landmark className="w-4 h-4" />
-          <span>Valuation</span>
+          <span>{t('tabFundamentals')}</span>
         </button>
 
         <button
@@ -261,7 +271,7 @@ export const AssetDetailPanel: React.FC<AssetDetailPanelProps> = ({
           }`}
         >
           <Newspaper className="w-4 h-4" />
-          <span>Notícias &amp; IA</span>
+          <span>{t('tabNews')}</span>
         </button>
       </div>
 
@@ -288,11 +298,11 @@ export const AssetDetailPanel: React.FC<AssetDetailPanelProps> = ({
                 </div>
 
                 <div className="flex flex-wrap items-center gap-3 text-slate-300">
-                  <div>Topo 100%: <strong className="text-white">R$ {fibonacci.fib0.toFixed(2)}</strong></div>
-                  <div>Fibo 38.2%: <strong className="text-slate-200">R$ {fibonacci.fib382.toFixed(2)}</strong></div>
-                  <div>Fibo 50.0%: <strong className="text-slate-200">R$ {fibonacci.fib500.toFixed(2)}</strong></div>
-                  <div>Fibo 61.8% (Golden Zone): <strong className="text-yellow-400 font-bold">R$ {fibonacci.fib618.toFixed(2)}</strong></div>
-                  <div>Fundo 0%: <strong className="text-white">R$ {fibonacci.fib100.toFixed(2)}</strong></div>
+                  <div>Topo 100%: <strong className="text-white">{formatCurrency(fibonacci.fib0, currency)}</strong></div>
+                  <div>Fibo 38.2%: <strong className="text-slate-200">{formatCurrency(fibonacci.fib382, currency)}</strong></div>
+                  <div>Fibo 50.0%: <strong className="text-slate-200">{formatCurrency(fibonacci.fib500, currency)}</strong></div>
+                  <div>Fibo 61.8% (Golden Zone): <strong className="text-yellow-400 font-bold">{formatCurrency(fibonacci.fib618, currency)}</strong></div>
+                  <div>Fundo 0%: <strong className="text-white">{formatCurrency(fibonacci.fib100, currency)}</strong></div>
                 </div>
               </div>
             )}

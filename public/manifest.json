@@ -1,10 +1,10 @@
 {
-  "name": "Monitor B3 - Swing Trade Pro",
-  "short_name": "Monitor B3",
-  "description": "Scanner de sobrevenda em tempo real e análise quantitativa da B3 para Swing Trade por ScienceBit (sciencebit.com.br)",
+  "name": "Wall Street Scanner - Swing Trade Pro",
+  "short_name": "Wall Street Scanner",
+  "description": "Scanner de sobrevenda em tempo real e análise quantitativa nas bolsas americanas (S&P 500, Nasdaq, NYSE, ETFs em US$) por ScienceBit (sciencebit.com.br)",
   "start_url": "/",
   "scope": "/",
-  "id": "com.monitorb3.swingtrade",
+  "id": "com.wallstreetscanner.swingtrade",
   "display": "standalone",
   "display_override": [
     "window-controls-overlay",
@@ -17,7 +17,6 @@
   "theme_color": "#0f172a",
   "lang": "pt-BR",
   "dir": "ltr",
-  "prefer_related_applications": false,
   "categories": [
     "finance",
     "business",
@@ -55,7 +54,7 @@
       "sizes": "1280x720",
       "type": "image/png",
       "form_factor": "wide",
-      "label": "Scanner de Sobrevenda e Monitor de Ativos B3"
+      "label": "Scanner de Sobrevenda e Monitor de Ativos Wall Street"
     },
     {
       "src": "/screenshot-mobile.png",
@@ -69,7 +68,7 @@
     {
       "name": "Scanner de Sobrevenda",
       "short_name": "Scanner",
-      "description": "Abrir o scanner de oportunidades na B3",
+      "description": "Abrir o scanner de oportunidades em Wall Street",
       "url": "/",
       "icons": [
         {

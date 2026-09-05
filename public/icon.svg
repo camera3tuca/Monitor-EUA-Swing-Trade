@@ -37,7 +37,7 @@
   <line x1="180" y1="220" x2="180" y2="370" stroke="#f43f5e" stroke-width="5"/>
   <rect x="164" y="245" width="32" height="95" rx="4" fill="url(#bearRed)"/>
 
-  <!-- Candle 3: Hammer / Reversal Pinbar (Sobrevenda B3) -->
+  <!-- Candle 3: Hammer / Reversal Pinbar (Oversold Dip) -->
   <line x1="250" y1="280" x2="250" y2="410" stroke="#38bdf8" stroke-width="5"/>
   <rect x="234" y="285" width="32" height="40" rx="4" fill="#38bdf8"/>
 
@@ -54,9 +54,9 @@
   <!-- Arrow Head -->
   <polygon points="415,110 380,128 398,158" fill="#10b981"/>
 
-  <!-- B3 Badge -->
-  <g transform="translate(60, 65)">
-    <rect width="115" height="40" rx="10" fill="#2563eb" opacity="0.95"/>
-    <text x="57" y="26" fill="#ffffff" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="20" font-weight="900" text-anchor="middle" letter-spacing="1.5">B3 PRO</text>
+  <!-- Wall Street Badge -->
+  <g transform="translate(50, 65)">
+    <rect width="145" height="42" rx="12" fill="#2563eb" opacity="0.95"/>
+    <text x="72" y="27" fill="#ffffff" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="18" font-weight="900" text-anchor="middle" letter-spacing="1.5">WALL ST</text>
   </g>
 </svg>

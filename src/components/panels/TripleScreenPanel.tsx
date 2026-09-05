@@ -115,8 +115,8 @@ export const TripleScreenPanel: React.FC<TripleScreenPanelProps> = ({ data, tick
             </p>
           </div>
           <div className="pt-2 border-t border-slate-800 text-[11px] font-mono text-slate-400 flex justify-between">
-            <span>Gatilho: <strong className="text-emerald-400">R$ {data.tela3.stopPrice.toFixed(2)}</strong></span>
-            <span>Stop-Loss: <strong className="text-rose-400">R$ {data.tela3.stopLossPrice.toFixed(2)}</strong></span>
+            <span>Gatilho: <strong className="text-emerald-400">$ {data.tela3.stopPrice.toFixed(2)}</strong></span>
+            <span>Stop-Loss: <strong className="text-rose-400">$ {data.tela3.stopLossPrice.toFixed(2)}</strong></span>
           </div>
         </div>
       </div>

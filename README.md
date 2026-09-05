@@ -1,42 +1,29 @@
-# monitor-quedas-b3-modularizado
-Monitor de quedas de ativos da B3, modularizado.
+# Monitor Swing Trade Pro - ScienceBit Computer
 
-Este projeto é uma aplicação [Streamlit](https://streamlit.io/) avançada para monitoramento, análise e predição do **mercado à vista da B3** — **Ações** (ON/PN/Units), **BDRs** (Brazilian Depositary Receipts) e **ETFs** nacionais — focada em Swing Trade.
+Scanner quantitativo, rastreador técnico e plataforma de inteligência para Swing Trade no **Mercado Americano (Wall Street: S&P 500, Nasdaq, NYSE, ETFs em US$)** e **Mercado Brasileiro (B3)** com suporte bilíngue (Português / Inglês).
 
-## 🌐 Universo de ativos (Ações, BDRs e ETFs)
+Desenvolvido por **ScienceBit Computer** ([sciencebit.com.br](https://sciencebit.com.br)).
 
-O scanner varre o **mercado brasileiro** via TradingView Screener, filtrando pelo **tipo do ativo** e classificando cada papel automaticamente em **Ação / BDR / ETF**. Assim, não há uma lista fixa a manter à mão: novos papéis listados na B3 entram na varredura automaticamente. (FIIs são identificados internamente e omitidos; para reincluí-los, basta adicionar `'FII'` a `CLASSES` em `modules/ativos.py`.)
+## 🌐 Universo de Ativos
 
-- **Seleção do universo:** escolha quais classes varrer (todas por padrão) antes de atualizar a análise.
-- **Filtro por classe:** a tabela de oportunidades traz uma coluna **Classe** e um filtro para restringir o que aparece.
-- **Análise por ativo (class-aware):** para **BDRs**, os fundamentos, o painel TradingView e as notícias usam a **empresa-mãe no exterior**; para **ativos nativos da B3** (ações/FIIs/ETFs), tudo é buscado direto na B3 (Yahoo `.SA`, BRAPI e TradingView mercado *brazil*), sem o mapeamento para o ticker americano.
-- A classificação (`modules/ativos.py`) usa os metadados `type`/`typespecs` do TradingView e, como reserva, o sufixo do código de negociação.
-- **Mercado fracionário descartado:** tickers com sufixo `F` (ex.: `PETR4F`) são duplicatas de baixa liquidez do lote-padrão e não têm histórico no Yahoo, por isso são omitidos do scanner em favor do lote-padrão equivalente.
-- **Fallback de histórico via BRAPI:** o gráfico e os módulos (Triple Screen, ML, RL, Minervini, Flow) tentam o Yahoo `.SA` e, se ele falhar (bloqueio de IP, comum em nuvem), caem para a série histórica da B3 na BRAPI — os ativos nativos deixam de ficar "sem histórico".
+### 1. Mercado Americano (Wall Street - US$)
+- **S&P 500**: Gigantes globais como Apple (`AAPL`), Microsoft (`MSFT`), Nvidia (`NVDA`), Amazon (`AMZN`), Alphabet (`GOOGL`), Meta (`META`), Tesla (`TSLA`), etc.
+- **Nasdaq 100**: Foco em tecnologia, semicondutores e inovação.
+- **NYSE**: Blue chips e conglomerados globais (Berkshire Hathaway, JPMorgan, ExxonMobil, Walmart).
+- **ETFs Setoriais e Globais**: SPY, QQQ, DIA, IWM, SMH, XLF, XLE, XLK, VOO, ARKK, entre outros.
 
-## 📂 Estrutura do Projeto (Módulos)
+### 2. Mercado Brasileiro (B3 - R$)
+- **Ações, BDRs e ETFs**: Acompanhamento de papéis da B3 com cotações em Reais.
 
-O projeto foi refatorado em vários módulos independentes dentro da pasta `modules/`, visando facilitar a manutenção, documentação e evolução do código. Cada módulo é responsável por um domínio específico da aplicação:
+## 🚀 Recursos Principais
 
-### 1. `technical.py` (Análise Técnica & Sinais)
-Responsável por baixar os dados de mercado (`yfinance`) em variados timeframes (diário, horário) e calcular os indicadores técnicos principais.
-- **Indicadores Calculados:** RSI, Estocástico, Bandas de Bollinger, MACD, EMAs (20, 50, 200).
-- **Funções de Análise:** Identificação de Sinais de Reversão, zonas de ouro de Fibonacci e cálculos do Índice de Sobrevenda (IS).
-- **Gráficos:** Contém a função de renderização gráfica em múltiplos painéis (`plotar_grafico`) usando Matplotlib.
-
-### 2. `fundamentals.py` (Análise Fundamentalista)
-Busca, processa e pontua os dados fundamentalistas das empresas (P/E Ratio, Dividend Yield, Market Cap, etc.).
-- Utiliza diversas fontes com fallback automático: Yahoo Finance, OpenBB / FMP e BRAPI.
-- Calcula um "Score Fundamentalista" (0 a 100) refletindo a saúde financeira e valuation da companhia.
-
-### 3. `minervini.py` (Análise de Fase Minervini / Stan Weinstein)
-Implementa o *Trend Template* desenvolvido por Mark Minervini e a análise de 4 Fases de Stan Weinstein.
-- Identifica se o ativo está em fase de acumulação, uptrend (Fase 2), distribuição ou downtrend.
-- Avalia Relative Strength (Força Relativa) contra o índice IBOV e calcula zonas ótimas para alocação de Stop Loss e Risk/Reward.
-
-### 4. `triple_screen.py` (Estratégia Triple Screen - Alexander Elder)
-Implementa o sistema de três telas (A Maré, A Onda, A Execução).
-- Analisa tendências de longo/médio prazo para validar pontos de entrada no curto prazo, operando sempre a favor da "maré" do mercado.
+- **Scanner Multimercado em Tempo Real**: Varredura de ativos com filtros de sobrevenda técnica (RSI, Estocástico, Índice de Sobrevenda - IS), volume relativo e médias móveis (EMA 20, 50, 200).
+- **Metodologia Triple Screen (Alexander Elder)**: Análise de tendência macro e micro com validação de maré e onda.
+- **Trend Template Minervini & Stan Weinstein**: Identificação de ativos em Fase 2 (Uptrend) e checklist quantitativo.
+- **Inteligência Artificial & Machine Learning**: Modelos preditivos de projeção de preços com horizonte de 5 dias e intervalos de confiança.
+- **Agente de Aprendizado por Reforço (RL)**: Simulação de tomada de decisão com Q-Learning (Comprar / Manter / Vender).
+- **Backtesting Integrado**: Avaliação histórica de taxa de acerto, fator de lucro (Profit Factor) e retorno médio dos sinais de sobrevenda.
+- **Internacionalização Completa**: Alternância instantânea entre Português (PT-BR) e Inglês (EN-US).
 
 ### 5. `ml.py` (Previsão via Machine Learning - Ensemble)
 Aplica técnicas clássicas de Machine Learning para predição direcional e variação do preço nos próximos dias úteis.

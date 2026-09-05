@@ -1,7 +1,9 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { AssetOpportunity } from '../types';
-import { ChevronUp, ChevronDown, CheckCircle2, ArrowDownRight, Eye, Layers, Filter, X, ChevronRight } from 'lucide-react';
+import { ChevronUp, ChevronDown, CheckCircle2, ArrowDownRight, Eye, Filter, X } from 'lucide-react';
 import { getSectorStyle } from '../utils/sectorUtils';
+import { useLanguage } from '../i18n/LanguageContext';
+import { formatCurrency, formatCompactVolume } from '../utils/currencyUtils';
 
 interface OpportunitiesTableProps {
   opportunities: AssetOpportunity[];
@@ -24,6 +26,7 @@ export const OpportunitiesTable: React.FC<OpportunitiesTableProps> = ({
   availableSectors = [],
   detailContent,
 }) => {
+  const { t } = useLanguage();
   const [sortField, setSortField] = useState<SortField>('Queda_Dia');
   const [sortAsc, setSortAsc] = useState<boolean>(true);
   const detailRef = useRef<HTMLTableRowElement | null>(null);
@@ -67,7 +70,6 @@ export const OpportunitiesTable: React.FC<OpportunitiesTableProps> = ({
     let vA = a[sortField];
     let vB = b[sortField];
     if (sortField === 'Queda_Dia') {
-      // Queda_Dia is negative, sortAsc = true means biggest drop first (-8% before -2%)
       return sortAsc ? (a.Queda_Dia - b.Queda_Dia) : (b.Queda_Dia - a.Queda_Dia);
     }
     if (sortField === 'Setor') {
@@ -84,36 +86,34 @@ export const OpportunitiesTable: React.FC<OpportunitiesTableProps> = ({
   const getPotentialBadge = (potencial: string) => {
     switch (potencial) {
       case 'Muito Alta':
-        return <span className="bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 text-[11px] font-extrabold px-2.5 py-0.5 rounded-full whitespace-nowrap">🟢 Muito Alta</span>;
+        return <span className="bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 text-[11px] font-extrabold px-2.5 py-0.5 rounded-full whitespace-nowrap">{t('potVeryHigh')}</span>;
       case 'Alta':
-        return <span className="bg-green-500/20 text-green-300 border border-green-500/40 text-[11px] font-bold px-2.5 py-0.5 rounded-full whitespace-nowrap">🟢 Alta</span>;
+        return <span className="bg-green-500/20 text-green-300 border border-green-500/40 text-[11px] font-bold px-2.5 py-0.5 rounded-full whitespace-nowrap">{t('potHigh')}</span>;
       case 'Média':
-        return <span className="bg-amber-500/20 text-amber-300 border border-amber-500/40 text-[11px] font-bold px-2.5 py-0.5 rounded-full whitespace-nowrap">🟡 Média</span>;
+        return <span className="bg-amber-500/20 text-amber-300 border border-amber-500/40 text-[11px] font-bold px-2.5 py-0.5 rounded-full whitespace-nowrap">{t('potMedium')}</span>;
       default:
-        return <span className="bg-slate-700/50 text-slate-300 border border-slate-600/40 text-[11px] font-medium px-2 py-0.5 rounded-full whitespace-nowrap">⚪ Baixa</span>;
+        return <span className="bg-slate-700/50 text-slate-300 border border-slate-600/40 text-[11px] font-medium px-2 py-0.5 rounded-full whitespace-nowrap">{t('potLow')}</span>;
     }
   };
 
-  const getClassBadge = (classe: string) => {
-    switch (classe) {
-      case 'BDR':
-        return <span className="bg-purple-500/20 text-purple-300 border border-purple-500/30 text-[10px] font-bold px-2 py-0.5 rounded">BDR</span>;
-      case 'ETF':
+  const getClassBadge = (row: AssetOpportunity) => {
+    if (row.exchange) {
+      if (row.exchange === 'ETF') {
         return <span className="bg-cyan-500/20 text-cyan-300 border border-cyan-500/30 text-[10px] font-bold px-2 py-0.5 rounded">ETF</span>;
-      default:
-        return <span className="bg-blue-500/20 text-blue-300 border border-blue-500/30 text-[10px] font-bold px-2 py-0.5 rounded">Ação</span>;
+      }
+      if (row.exchange === 'NASDAQ') {
+        return <span className="bg-blue-500/20 text-blue-300 border border-blue-500/30 text-[10px] font-bold px-2 py-0.5 rounded">NASDAQ</span>;
+      }
+      if (row.exchange === 'NYSE') {
+        return <span className="bg-indigo-500/20 text-indigo-300 border border-indigo-500/30 text-[10px] font-bold px-2 py-0.5 rounded">NYSE</span>;
+      }
+      return <span className="bg-slate-700 text-slate-300 text-[10px] font-bold px-2 py-0.5 rounded">{row.exchange}</span>;
     }
-  };
 
-  const formatBRL = (v: number) => {
-    return `R$ ${Number(v || 0).toFixed(2)}`;
-  };
-
-  const formatVolume = (v: number) => {
-    if (v >= 1e9) return `R$ ${(v / 1e9).toFixed(1)}B`;
-    if (v >= 1e6) return `R$ ${(v / 1e6).toFixed(1)}M`;
-    if (v >= 1e3) return `R$ ${(v / 1e3).toFixed(0)}k`;
-    return `R$ ${v.toFixed(0)}`;
+    if (row.Classe === 'ETF') {
+      return <span className="bg-cyan-500/20 text-cyan-300 border border-cyan-500/30 text-[10px] font-bold px-2 py-0.5 rounded">ETF</span>;
+    }
+    return <span className="bg-blue-500/20 text-blue-300 border border-blue-500/30 text-[10px] font-bold px-2 py-0.5 rounded">Ação</span>;
   };
 
   return (
@@ -122,13 +122,13 @@ export const OpportunitiesTable: React.FC<OpportunitiesTableProps> = ({
       <div className="p-4 border-b border-slate-700/80 flex flex-col md:flex-row md:items-center justify-between gap-3 bg-slate-850">
         <div>
           <h2 className="text-base font-bold text-white flex items-center gap-2">
-            <span>🎯 Oportunidades Identificadas</span>
+            <span>🎯 {t('showingAssets')}</span>
             <span className="text-xs bg-slate-700 text-slate-300 px-2 py-0.5 rounded-full font-mono font-medium">
-              {opportunities.length} encontrados
+              {opportunities.length}
             </span>
           </h2>
           <p className="text-xs text-slate-400">
-            Clique em qualquer ativo para carregar o painel completo de análise técnica e preditiva.
+            {t('colSignals')} • S&P 500, Nasdaq, NYSE &amp; ETFs
           </p>
         </div>
 
@@ -137,14 +137,14 @@ export const OpportunitiesTable: React.FC<OpportunitiesTableProps> = ({
           <div className="flex items-center gap-2">
             <div className="flex items-center gap-1.5 bg-slate-900/80 border border-slate-700/80 rounded-xl px-2.5 py-1.5 text-xs">
               <Filter className="w-3.5 h-3.5 text-indigo-400" />
-              <span className="text-slate-400 font-medium">Setor:</span>
+              <span className="text-slate-400 font-medium">{t('colSector')}:</span>
               <select
                 id="select-table-sector-filter"
                 value={selectedSector}
                 onChange={(e) => onSelectSector(e.target.value)}
                 className="bg-transparent text-slate-200 font-semibold focus:outline-none cursor-pointer text-xs"
               >
-                <option value="all" className="bg-slate-900 text-white">Todos os Setores</option>
+                <option value="all" className="bg-slate-900 text-white">{t('allSectors')}</option>
                 {availableSectors.map(([sec, count]) => (
                   <option key={sec} value={sec} className="bg-slate-900 text-white">
                     {sec} ({count})
@@ -155,7 +155,7 @@ export const OpportunitiesTable: React.FC<OpportunitiesTableProps> = ({
                 <button
                   onClick={() => onSelectSector('all')}
                   className="text-rose-400 hover:text-rose-300 ml-1 p-0.5"
-                  title="Limpar filtro de setor"
+                  title={t('clearFilter')}
                 >
                   <X className="w-3 h-3" />
                 </button>
@@ -171,16 +171,16 @@ export const OpportunitiesTable: React.FC<OpportunitiesTableProps> = ({
             <tr className="bg-slate-900/90 text-slate-400 font-semibold border-b border-slate-700 select-none">
               <th className="py-3 px-3.5 cursor-pointer hover:text-white" onClick={() => handleSort('Ticker')}>
                 <div className="flex items-center gap-1">
-                  Ticker {sortField === 'Ticker' && (sortAsc ? <ChevronUp className="w-3 h-3 text-blue-400" /> : <ChevronDown className="w-3 h-3 text-blue-400" />)}
+                  {t('colTicker')} {sortField === 'Ticker' && (sortAsc ? <ChevronUp className="w-3 h-3 text-blue-400" /> : <ChevronDown className="w-3 h-3 text-blue-400" />)}
                 </div>
               </th>
-              <th className="py-3 px-2">Classe</th>
+              <th className="py-3 px-2">{t('colIndex')}</th>
               <th className="py-3 px-3 cursor-pointer hover:text-white" onClick={() => handleSort('Setor')}>
                 <div className="flex items-center gap-1">
-                  Setor {sortField === 'Setor' && (sortAsc ? <ChevronUp className="w-3 h-3 text-blue-400" /> : <ChevronDown className="w-3 h-3 text-blue-400" />)}
+                  {t('colSector')} {sortField === 'Setor' && (sortAsc ? <ChevronUp className="w-3 h-3 text-blue-400" /> : <ChevronDown className="w-3 h-3 text-blue-400" />)}
                 </div>
               </th>
-              <th className="py-3 px-3">Empresa</th>
+              <th className="py-3 px-3">{t('colCompany')}</th>
               <th className="py-3 px-2 text-center cursor-pointer hover:text-white" onClick={() => handleSort('Liquidez')}>
                 <div className="flex items-center justify-center gap-1">
                   Liq. {sortField === 'Liquidez' && (sortAsc ? <ChevronUp className="w-3 h-3 text-blue-400" /> : <ChevronDown className="w-3 h-3 text-blue-400" />)}
@@ -188,32 +188,32 @@ export const OpportunitiesTable: React.FC<OpportunitiesTableProps> = ({
               </th>
               <th className="py-3 px-3 text-right cursor-pointer hover:text-white" onClick={() => handleSort('Preco')}>
                 <div className="flex items-center justify-end gap-1">
-                  Preço {sortField === 'Preco' && (sortAsc ? <ChevronUp className="w-3 h-3 text-blue-400" /> : <ChevronDown className="w-3 h-3 text-blue-400" />)}
+                  {t('colPrice')} {sortField === 'Preco' && (sortAsc ? <ChevronUp className="w-3 h-3 text-blue-400" /> : <ChevronDown className="w-3 h-3 text-blue-400" />)}
                 </div>
               </th>
               <th className="py-3 px-3 text-right cursor-pointer hover:text-white" onClick={() => handleSort('Queda_Dia')}>
                 <div className="flex items-center justify-end gap-1">
-                  Queda {sortField === 'Queda_Dia' && (sortAsc ? <ChevronUp className="w-3 h-3 text-blue-400" /> : <ChevronDown className="w-3 h-3 text-blue-400" />)}
+                  {t('colDrop')} {sortField === 'Queda_Dia' && (sortAsc ? <ChevronUp className="w-3 h-3 text-blue-400" /> : <ChevronDown className="w-3 h-3 text-blue-400" />)}
                 </div>
               </th>
               <th className="py-3 px-3 text-center cursor-pointer hover:text-white" onClick={() => handleSort('IS')}>
                 <div className="flex items-center justify-center gap-1">
-                  I.S. (Sobrevenda) {sortField === 'IS' && (sortAsc ? <ChevronUp className="w-3 h-3 text-blue-400" /> : <ChevronDown className="w-3 h-3 text-blue-400" />)}
+                  {t('colIS')} {sortField === 'IS' && (sortAsc ? <ChevronUp className="w-3 h-3 text-blue-400" /> : <ChevronDown className="w-3 h-3 text-blue-400" />)}
                 </div>
               </th>
               <th className="py-3 px-3 text-right cursor-pointer hover:text-white" onClick={() => handleSort('Volume')}>
                 <div className="flex items-center justify-end gap-1">
-                  Vol. Fin. {sortField === 'Volume' && (sortAsc ? <ChevronUp className="w-3 h-3 text-blue-400" /> : <ChevronDown className="w-3 h-3 text-blue-400" />)}
+                  {t('volume')} {sortField === 'Volume' && (sortAsc ? <ChevronUp className="w-3 h-3 text-blue-400" /> : <ChevronDown className="w-3 h-3 text-blue-400" />)}
                 </div>
               </th>
-              <th className="py-3 px-2 text-center">Potencial</th>
+              <th className="py-3 px-2 text-center">{t('colPotential')}</th>
               <th className="py-3 px-3 text-center cursor-pointer hover:text-white" onClick={() => handleSort('Score')}>
                 <div className="flex items-center justify-center gap-1">
-                  Score {sortField === 'Score' && (sortAsc ? <ChevronUp className="w-3 h-3 text-blue-400" /> : <ChevronDown className="w-3 h-3 text-blue-400" />)}
+                  {t('colScore')} {sortField === 'Score' && (sortAsc ? <ChevronUp className="w-3 h-3 text-blue-400" /> : <ChevronDown className="w-3 h-3 text-blue-400" />)}
                 </div>
               </th>
-              <th className="py-3 px-3">Sinais Técnicos</th>
-              <th className="py-3 px-2 text-center">Ação</th>
+              <th className="py-3 px-3">{t('colSignals')}</th>
+              <th className="py-3 px-2 text-center">{t('colAction')}</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-slate-700/50">
@@ -221,6 +221,7 @@ export const OpportunitiesTable: React.FC<OpportunitiesTableProps> = ({
               const isSelected = row.Ticker === selectedTicker;
               const sector = row.Setor || 'Outros';
               const sectorStyle = getSectorStyle(sector);
+              const currency = row.currency || 'USD';
 
               return (
                 <React.Fragment key={row.Ticker}>
@@ -241,9 +242,9 @@ export const OpportunitiesTable: React.FC<OpportunitiesTableProps> = ({
                       </div>
                     </td>
 
-                    {/* Classe */}
+                    {/* Classe / Bolsa */}
                     <td className="py-3 px-2 whitespace-nowrap">
-                      {getClassBadge(row.Classe)}
+                      {getClassBadge(row)}
                     </td>
 
                     {/* Setor */}
@@ -265,7 +266,7 @@ export const OpportunitiesTable: React.FC<OpportunitiesTableProps> = ({
                     </td>
 
                     {/* Empresa */}
-                    <td className="py-3 px-3 whitespace-nowrap font-medium text-slate-200 max-w-[150px] truncate" title={row.Empresa}>
+                    <td className="py-3 px-3 whitespace-nowrap font-medium text-slate-200 max-w-[170px] truncate" title={row.Empresa}>
                       {row.Empresa}
                     </td>
 
@@ -280,7 +281,7 @@ export const OpportunitiesTable: React.FC<OpportunitiesTableProps> = ({
 
                     {/* Preco */}
                     <td className="py-3 px-3 text-right font-mono font-semibold text-white whitespace-nowrap">
-                      {formatBRL(row.Preco)}
+                      {formatCurrency(row.Preco, currency)}
                     </td>
 
                     {/* Queda */}
@@ -312,7 +313,7 @@ export const OpportunitiesTable: React.FC<OpportunitiesTableProps> = ({
 
                     {/* Volume */}
                     <td className="py-3 px-3 text-right font-mono text-slate-300 whitespace-nowrap">
-                      {formatVolume(row.Volume)}
+                      {formatCompactVolume(row.Volume, currency)}
                     </td>
 
                     {/* Potencial */}
@@ -342,10 +343,10 @@ export const OpportunitiesTable: React.FC<OpportunitiesTableProps> = ({
                             ? 'bg-blue-600 text-white shadow-md shadow-blue-900/40'
                             : 'bg-slate-700/70 hover:bg-slate-600 text-slate-300'
                         }`}
-                        title={isSelected ? 'Ocultar análise' : 'Abrir análise logo abaixo'}
+                        title={isSelected ? t('closeAnalysis') : t('analyze')}
                       >
                         <Eye className="w-3.5 h-3.5" />
-                        <span className="hidden xl:inline">{isSelected ? 'Ocultar' : 'Ver'}</span>
+                        <span className="hidden xl:inline">{isSelected ? t('closeAnalysis') : t('analyze')}</span>
                       </button>
                     </td>
                   </tr>
