@@ -1,9 +1,11 @@
 import React, { useState, useEffect, useMemo } from 'react';
+import { Download, FileText } from 'lucide-react';
 import { Header } from './components/Header';
 import { ScannerFilters } from './components/ScannerFilters';
 import { OpportunitiesTable } from './components/OpportunitiesTable';
 import { AssetDetailPanel, TabType } from './components/AssetDetailPanel';
 import { ScienceBitLogo } from './components/ScienceBitLogo';
+import { PlayStoreKitModal } from './components/PlayStoreKitModal';
 import { useLanguage } from './i18n/LanguageContext';
 
 import {
@@ -78,6 +80,7 @@ export const App: React.FC = () => {
   const [opportunities, setOpportunities] = useState<AssetOpportunity[]>([]);
   const [isScanning, setIsScanning] = useState<boolean>(false);
   const [selectedTicker, setSelectedTicker] = useState<string | null>('NVDA');
+  const [isKitModalOpen, setIsKitModalOpen] = useState<boolean>(false);
 
   // Active Asset Analysis State
   const [timeframe, setTimeframe] = useState<string>('1d');
@@ -234,7 +237,7 @@ export const App: React.FC = () => {
   return (
     <div className="min-h-screen bg-slate-900 text-slate-100 flex flex-col font-['Plus_Jakarta_Sans',sans-serif]">
       {/* Top Navigation Header */}
-      <Header />
+      <Header onOpenPlayStoreKit={() => setIsKitModalOpen(true)} />
 
       <main className="flex-1 max-w-7xl w-full mx-auto px-4 lg:px-8 py-6 space-y-6">
         {/* Scanner Filters */}
@@ -316,6 +319,27 @@ export const App: React.FC = () => {
                 Versão 2.0 Wall Street Pro
               </span>
               <span className="text-slate-600 hidden sm:inline">|</span>
+              <button
+                id="footer-btn-download-assets"
+                type="button"
+                onClick={() => setIsKitModalOpen(true)}
+                className="inline-flex items-center gap-1.5 text-emerald-400 hover:text-emerald-300 transition text-[11px] font-medium bg-emerald-500/10 hover:bg-emerald-500/20 border border-emerald-500/30 px-2.5 py-1 rounded-lg cursor-pointer"
+              >
+                <Download className="w-3 h-3" />
+                <span>Kit Google Play (Fotos &amp; Assets)</span>
+              </button>
+              <a
+                id="footer-btn-privacy"
+                href="/privacy.html"
+                target="_blank"
+                rel="noreferrer"
+                className="inline-flex items-center gap-1.5 text-slate-300 hover:text-white transition text-[11px] font-medium bg-slate-800 hover:bg-slate-750 border border-slate-700 px-2.5 py-1 rounded-lg"
+              >
+                <FileText className="w-3 h-3 text-blue-400" />
+                <span>Política de Privacidade</span>
+                <ExternalLink className="w-2.5 h-2.5 opacity-60" />
+              </a>
+              <span className="text-slate-600 hidden sm:inline">|</span>
               <span className="text-slate-400">
                 © {new Date().getFullYear()} ScienceBit Computer. Todos os direitos reservados.
               </span>
@@ -340,6 +364,13 @@ export const App: React.FC = () => {
           </div>
         </div>
       </footer>
+
+      {/* Play Store Assets Modal */}
+      <PlayStoreKitModal
+        isOpen={isKitModalOpen}
+        onClose={() => setIsKitModalOpen(false)}
+        appUrl={typeof window !== 'undefined' ? window.location.origin : ''}
+      />
     </div>
   );
 };

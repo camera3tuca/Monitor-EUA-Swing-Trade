@@ -70,7 +70,9 @@ export interface Translations {
   colIndex: string;
   colSector: string;
   colPrice: string;
+  colPrevClose: string;
   colDrop: string;
+  colChange: string;
   colGap: string;
   colIS: string;
   colRSI: string;
@@ -175,19 +177,21 @@ export const translations: Record<Language, Translations> = {
     clearFilter: 'Limpar',
 
     colTicker: 'Ticker',
-    colCompany: 'Empresa / Fundo',
-    colIndex: 'Índice / Bolsa',
+    colCompany: 'Empresa',
+    colIndex: 'Classe',
     colSector: 'Setor',
-    colPrice: 'Preço (US$)',
-    colDrop: 'Queda (%)',
+    colPrice: 'Preço',
+    colPrevClose: 'Fech. Anterior',
+    colDrop: 'Queda',
+    colChange: 'Variação',
     colGap: 'Gap (%)',
-    colIS: 'I.S.',
+    colIS: 'I.S. (Sobrevenda)',
     colRSI: 'RSI(14)',
     colStoch: 'Estoc.',
     colPotential: 'Potencial',
     colScore: 'Score',
     colSignals: 'Sinais Técnicos',
-    colAction: 'Análise',
+    colAction: 'Ação',
     analyze: 'Analisar',
     closeAnalysis: 'Fechar',
 
@@ -207,7 +211,7 @@ export const translations: Record<Language, Translations> = {
     tabNews: 'Notícias & Sentimento',
 
     price: 'Preço',
-    volume: 'Volume',
+    volume: 'Vol. Fin.',
     close: 'Fechamento',
     change: 'Variação',
     high: 'Máxima',
@@ -279,19 +283,21 @@ export const translations: Record<Language, Translations> = {
     clearFilter: 'Clear',
 
     colTicker: 'Ticker',
-    colCompany: 'Company / Fund',
-    colIndex: 'Index / Exchange',
+    colCompany: 'Company',
+    colIndex: 'Class',
     colSector: 'Sector',
-    colPrice: 'Price (US$)',
-    colDrop: 'Drop (%)',
+    colPrice: 'Price',
+    colPrevClose: 'Prev. Close',
+    colDrop: 'Drop',
+    colChange: 'Change',
     colGap: 'Gap (%)',
-    colIS: 'O.I.',
+    colIS: 'I.S. (Oversold)',
     colRSI: 'RSI(14)',
     colStoch: 'Stoch.',
     colPotential: 'Potential',
     colScore: 'Score',
     colSignals: 'Technical Signals',
-    colAction: 'Analysis',
+    colAction: 'Action',
     analyze: 'Analyze',
     closeAnalysis: 'Close',
 
@@ -311,7 +317,7 @@ export const translations: Record<Language, Translations> = {
     tabNews: 'News & Sentiment',
 
     price: 'Price',
-    volume: 'Volume',
+    volume: 'Fin. Vol.',
     close: 'Close',
     change: 'Change',
     high: 'High',

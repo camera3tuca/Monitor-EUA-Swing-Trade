@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { AssetOpportunity } from '../types';
-import { ChevronUp, ChevronDown, CheckCircle2, ArrowDownRight, Eye, Filter, X } from 'lucide-react';
+import { ChevronUp, ChevronDown, CheckCircle2, ArrowDownRight, ArrowUpRight, Eye, Filter, X } from 'lucide-react';
 import { getSectorStyle } from '../utils/sectorUtils';
 import { useLanguage } from '../i18n/LanguageContext';
 import { formatCurrency, formatCompactVolume } from '../utils/currencyUtils';
@@ -15,7 +15,7 @@ interface OpportunitiesTableProps {
   detailContent?: React.ReactNode;
 }
 
-type SortField = 'IS' | 'Queda_Dia' | 'Score' | 'Liquidez' | 'Preco' | 'Volume' | 'Ticker' | 'Setor';
+type SortField = 'IS' | 'Queda_Dia' | 'Score' | 'Liquidez' | 'Preco' | 'Fechamento_Anterior' | 'Volume' | 'Ticker' | 'Setor';
 
 export const OpportunitiesTable: React.FC<OpportunitiesTableProps> = ({
   opportunities,
@@ -272,24 +272,37 @@ export const OpportunitiesTable: React.FC<OpportunitiesTableProps> = ({
 
                     {/* Liquidez */}
                     <td className="py-3 px-2 text-center whitespace-nowrap">
-                      <span className={`inline-flex items-center justify-center px-1.5 py-0.5 rounded font-mono font-bold text-[10px] ${
-                        row.Liquidez >= 7 ? 'bg-cyan-500/20 text-cyan-300' : row.Liquidez >= 4 ? 'bg-blue-500/20 text-blue-300' : 'bg-slate-700 text-slate-400'
-                      }`}>
+                      <span
+                        className={`inline-flex items-center justify-center px-1.5 py-0.5 rounded font-mono font-bold text-[10px] ${
+                          row.Liquidez >= 7 ? 'bg-cyan-500/20 text-cyan-300' : row.Liquidez >= 4 ? 'bg-blue-500/20 text-blue-300' : 'bg-slate-700 text-slate-400'
+                        }`}
+                        title={`Liquidez: ${row.Liquidez}/10 (${row.Liquidez >= 8 ? 'Altíssima Liquidez' : row.Liquidez >= 5 ? 'Boa Liquidez' : 'Liquidez Moderada'})\nVol. Fin. Médio: ${formatCompactVolume(row.Volume, currency)}/dia`}
+                      >
                         💧 {row.Liquidez}/10
                       </span>
                     </td>
 
-                    {/* Preco */}
-                    <td className="py-3 px-3 text-right font-mono font-semibold text-white whitespace-nowrap">
+                    {/* Preco Atual */}
+                    <td
+                      className="py-3 px-3 text-right font-mono font-semibold text-white whitespace-nowrap"
+                      title={row.Fechamento_Anterior ? `Preço: ${formatCurrency(row.Preco, currency)}\nFech. Anterior: ${formatCurrency(row.Fechamento_Anterior, currency)}` : undefined}
+                    >
                       {formatCurrency(row.Preco, currency)}
                     </td>
 
-                    {/* Queda */}
-                    <td className="py-3 px-3 text-right font-mono font-bold text-rose-400 whitespace-nowrap">
-                      <span className="inline-flex items-center gap-0.5">
-                        <ArrowDownRight className="w-3.5 h-3.5" />
-                        {row.Queda_Dia.toFixed(2)}%
-                      </span>
+                    {/* Variacao / Queda */}
+                    <td className="py-3 px-3 text-right font-mono font-bold whitespace-nowrap">
+                      {row.Queda_Dia >= 0 ? (
+                        <span className="inline-flex items-center gap-0.5 text-emerald-400">
+                          <ArrowUpRight className="w-3.5 h-3.5" />
+                          +{row.Queda_Dia.toFixed(2)}%
+                        </span>
+                      ) : (
+                        <span className="inline-flex items-center gap-0.5 text-rose-400">
+                          <ArrowDownRight className="w-3.5 h-3.5" />
+                          {row.Queda_Dia.toFixed(2)}%
+                        </span>
+                      )}
                     </td>
 
                     {/* IS */}
@@ -312,7 +325,10 @@ export const OpportunitiesTable: React.FC<OpportunitiesTableProps> = ({
                     </td>
 
                     {/* Volume */}
-                    <td className="py-3 px-3 text-right font-mono text-slate-300 whitespace-nowrap">
+                    <td
+                      className="py-3 px-3 text-right font-mono text-slate-300 whitespace-nowrap"
+                      title={`Volume Financeiro Médio: ${formatCompactVolume(row.Volume, currency)}/dia\nVolume Médio em Ações: ~${Math.round(row.Volume / (row.Preco || 1)).toLocaleString('pt-BR')} ações/dia`}
+                    >
                       {formatCompactVolume(row.Volume, currency)}
                     </td>
 
@@ -359,7 +375,7 @@ export const OpportunitiesTable: React.FC<OpportunitiesTableProps> = ({
                       id={`row-detail-${row.Ticker.toLowerCase()}`}
                       className="bg-slate-950/95"
                     >
-                      <td colSpan={13} className="p-0 border-y-2 border-blue-500/50 bg-slate-950">
+                      <td colSpan={14} className="p-0 border-y-2 border-blue-500/50 bg-slate-950">
                         <div
                           className="sticky left-0 overflow-hidden p-2 sm:p-4 max-w-full"
                           style={{

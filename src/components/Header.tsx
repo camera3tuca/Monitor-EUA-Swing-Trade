@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Clock, ShieldCheck, ChevronDown, ChevronUp, BookOpen, Sparkles, Globe, DollarSign } from 'lucide-react';
+import { Clock, ShieldCheck, ChevronDown, ChevronUp, BookOpen, Sparkles, Globe, DollarSign, Download } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { useLanguage } from '../i18n/LanguageContext';
 import { MarketUniverse } from '../types';
@@ -17,9 +17,10 @@ interface HeaderProps {
   market?: MarketUniverse;
   onMarketChange?: (m: MarketUniverse) => void;
   onSelectMarket?: (m: MarketUniverse) => void;
+  onOpenPlayStoreKit?: () => void;
 }
 
-export const Header: React.FC<HeaderProps> = () => {
+export const Header: React.FC<HeaderProps> = ({ onOpenPlayStoreKit }) => {
   const { language, setLanguage, t } = useLanguage();
   const [timeStr, setTimeStr] = useState<string>('');
   const [marketStatus, setMarketStatus] = useState<MarketStatus>({
@@ -211,11 +212,24 @@ export const Header: React.FC<HeaderProps> = () => {
           <button
             id="btn-toggle-guide"
             onClick={() => setGuiaAberto(!guiaAberto)}
-            className="flex items-center gap-1.5 bg-blue-600/20 hover:bg-blue-600/30 border border-blue-500/40 text-blue-300 hover:text-blue-200 px-3 py-1.5 rounded-lg font-medium transition cursor-pointer"
+            className="flex items-center gap-1.5 bg-blue-600/20 hover:bg-blue-600/30 border border-blue-500/40 text-blue-300 hover:text-blue-200 px-3 py-1.5 rounded-lg font-medium transition cursor-pointer text-xs sm:text-sm"
           >
             <BookOpen className="w-3.5 h-3.5" />
             <span>{t('guideBtn')}</span>
             {guiaAberto ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
+          </button>
+
+          {/* Download Play Store Assets Pack */}
+          <button
+            id="btn-download-assets-zip"
+            type="button"
+            onClick={onOpenPlayStoreKit}
+            className="flex items-center gap-1.5 bg-emerald-600/20 hover:bg-emerald-600/30 border border-emerald-500/40 text-emerald-300 hover:text-emerald-200 px-3 py-1.5 rounded-lg font-medium transition cursor-pointer text-xs sm:text-sm"
+            title="Abrir Kit com todos os ícones (512x512), gráfico de recursos (1024x500), screenshots e links para Play Store"
+          >
+            <Download className="w-3.5 h-3.5 text-emerald-400" />
+            <span className="hidden sm:inline">Kit Google Play (.ZIP)</span>
+            <span className="sm:hidden">Kit Play</span>
           </button>
         </div>
       </div>

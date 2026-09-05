@@ -15,6 +15,8 @@ export interface AssetOpportunity {
   Classe: AssetClass;
   Setor: string;
   Preco: number;
+  Fechamento_Anterior: number;
+  Variacao_Abs?: number;
   Volume: number;
   Queda_Dia: number;
   Gap: number;

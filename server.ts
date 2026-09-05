@@ -137,22 +137,37 @@ function classificarAtivo(
   return 'Ação';
 }
 
-function calcularLiquidez(volMedio: number, preco: number, volumeHoje: number): number {
+function calcularLiquidez(volMedio: number, preco: number, volumeHoje: number, isUsMarket: boolean = true): number {
   let vol = Number(volMedio || 0);
   if (vol <= 0) vol = Number(volumeHoje || 0);
   const p = Number(preco || 0);
   const fin = vol * p;
 
-  if (fin >= 5_000_000) return 10;
-  if (fin >= 2_000_000) return 9;
-  if (fin >= 1_000_000) return 8;
-  if (fin >= 500_000) return 7;
-  if (fin >= 200_000) return 6;
-  if (fin >= 100_000) return 5;
-  if (fin >= 50_000) return 4;
-  if (fin >= 20_000) return 3;
-  if (fin >= 5_000) return 2;
-  return 1;
+  if (isUsMarket) {
+    // US Market Institutional & Retail Liquidity Tiers (Daily Traded Dollar Volume)
+    if (fin >= 1_000_000_000) return 10; // Mega-caps ($1B+ / day, e.g. NVDA, AAPL, SPY, QQQ, TSLA)
+    if (fin >= 500_000_000) return 9;   // High volume ($500M - $1B / day, e.g. AMD, GOOGL, AVGO)
+    if (fin >= 200_000_000) return 8;   // Very solid liquidity ($200M - $500M / day)
+    if (fin >= 100_000_000) return 7;   // Liquid mid/large ($100M - $200M / day)
+    if (fin >= 50_000_000) return 6;    // Mid-caps ($50M - $100M / day)
+    if (fin >= 20_000_000) return 5;    // Standard liquid ($20M - $50M / day)
+    if (fin >= 10_000_000) return 4;    // Moderate liquidity ($10M - $20M / day)
+    if (fin >= 5_000_000) return 3;     // Low-moderate ($5M - $10M / day)
+    if (fin >= 2_000_000) return 2;     // Low ($2M - $5M / day)
+    return 1;                           // Micro / Illiquid (< $2M / day)
+  } else {
+    // Brazilian B3 Market tiers (R$)
+    if (fin >= 50_000_000) return 10;
+    if (fin >= 25_000_000) return 9;
+    if (fin >= 10_000_000) return 8;
+    if (fin >= 5_000_000) return 7;
+    if (fin >= 2_000_000) return 6;
+    if (fin >= 1_000_000) return 5;
+    if (fin >= 500_000) return 4;
+    if (fin >= 200_000) return 3;
+    if (fin >= 50_000) return 2;
+    return 1;
+  }
 }
 
 function gerarSinais(p: number, rsi: number, stoch: number, macdHist: number, ema20?: number, ema50?: number, ema200?: number) {
@@ -209,6 +224,16 @@ app.get('/api/health', (req, res) => {
   res.json({ status: 'ok', timestamp: Date.now() });
 });
 
+// ── API: Download Play Store Assets Bundle (ZIP) ──
+app.get('/api/download-assets', (req, res) => {
+  const zipPath = path.join(process.cwd(), 'public', 'wallstreet-scanner-playstore-assets.zip');
+  res.download(zipPath, 'wallstreet-scanner-playstore-assets.zip', (err) => {
+    if (err) {
+      res.status(500).json({ error: 'Erro ao transferir arquivo zip de assets' });
+    }
+  });
+});
+
 // ── API: Scan Opportunities (Wall Street / US) ──
 app.post('/api/scan', async (req, res) => {
   try {
@@ -223,101 +248,126 @@ app.post('/api/scan', async (req, res) => {
 
     let tvResults: any[] = [];
     const scanUrl = 'https://scanner.tradingview.com/america/scan';
-    const typeFilter = ["stock", "fund"];
+
+    // 1. Curated Benchmark US Market Leaders & ETFs to guarantee major real assets are always present
+    const TOP_US_TICKERS = [
+      "NASDAQ:NVDA", "NASDAQ:AAPL", "NASDAQ:MSFT", "NASDAQ:TSLA", "NASDAQ:AMZN",
+      "NASDAQ:META", "NASDAQ:GOOGL", "NASDAQ:AMD", "NASDAQ:PLTR", "NASDAQ:INTC",
+      "NASDAQ:NFLX", "NASDAQ:AVGO", "NASDAQ:ORCL", "NASDAQ:CRM", "NASDAQ:QCOM",
+      "NASDAQ:TXN", "NASDAQ:CSCO", "NASDAQ:ADBE", "NASDAQ:AMAT", "NASDAQ:MU",
+      "NASDAQ:LRCX", "NASDAQ:PANW", "NASDAQ:CRWD", "NASDAQ:ARM", "NASDAQ:COIN",
+      "NASDAQ:LULU", "NASDAQ:BKNG", "NASDAQ:ISRG", "NASDAQ:MDLZ", "NASDAQ:REGN",
+      "NYSE:JPM", "NYSE:LLY", "NYSE:XOM", "NYSE:DIS", "NYSE:WMT", "NYSE:CAT",
+      "NYSE:V", "NYSE:MA", "NYSE:BAC", "NYSE:UNH", "NYSE:GE", "NYSE:BA",
+      "NYSE:CVX", "NYSE:JNJ", "NYSE:PG", "NYSE:KO", "NYSE:PEP", "NYSE:MCD",
+      "NYSE:COST", "NYSE:HD", "NYSE:IBM", "NYSE:ABBV", "NYSE:MRK", "NYSE:PFE",
+      "NYSE:PATH", "NYSE:GWRE", "NYSE:UBER", "NYSE:NOW", "NYSE:SNOW", "NYSE:SHOP",
+      "NYSE:SPY", "NASDAQ:QQQ", "NYSE:IWM", "NYSE:DIA", "NYSE:XLK", "NYSE:XLF",
+      "NYSE:XLE", "NYSE:XLV", "NYSE:XLI", "NYSE:XLY", "NYSE:XLP", "NYSE:XLU",
+      "NYSE:XLB", "NASDAQ:SMH", "NASDAQ:SOXX", "NYSE:ARKK", "NYSE:GLD", "NYSE:SLV",
+      "NYSE:TLT", "NYSE:EEM", "NYSE:FXI"
+    ];
 
     try {
-      const resp = await fetch(scanUrl, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'User-Agent': 'Mozilla/5.0' },
-        body: JSON.stringify({
-          filter: [
-            { left: "type", operation: "in_range", right: typeFilter },
-            { left: "change", operation: "less", right: 0 }
-          ],
-          options: { lang: "en" },
-          symbols: { query: { types: [] }, tickers: [] },
-          columns: tvColumns,
-          sort: { sortBy: "change", sortOrder: "asc" },
-          range: [0, 250]
+      // Execute both: (A) Direct symbols query for benchmark leaders and (B) Scanner query for top market movers on major exchanges
+      const [respSymbols, respScanner] = await Promise.allSettled([
+        fetch(scanUrl, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'User-Agent': 'Mozilla/5.0' },
+          body: JSON.stringify({
+            symbols: { tickers: TOP_US_TICKERS },
+            columns: tvColumns
+          }),
+          signal: AbortSignal.timeout(7000)
         }),
-        signal: AbortSignal.timeout(6000)
-      });
+        fetch(scanUrl, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'User-Agent': 'Mozilla/5.0' },
+          body: JSON.stringify({
+            filter: [
+              { left: "type", operation: "in_range", right: ["stock", "fund"] },
+              { left: "exchange", operation: "in_range", right: ["NASDAQ", "NYSE", "AMEX", "CBOE"] },
+              { left: "close", operation: "greater", right: 2.5 },
+              { left: "volume", operation: "greater", right: 300000 },
+              { left: "average_volume_10d_calc", operation: "greater", right: 200000 }
+            ],
+            options: { lang: "en" },
+            symbols: { query: { types: [] }, tickers: [] },
+            columns: tvColumns,
+            sort: { sortBy: "change", sortOrder: "asc" },
+            range: [0, 80]
+          }),
+          signal: AbortSignal.timeout(7000)
+        })
+      ]);
 
-      if (resp.ok) {
-        const json = await resp.json();
+      const rawItems: any[] = [];
+
+      if (respSymbols.status === 'fulfilled' && respSymbols.value.ok) {
+        const json = await respSymbols.value.json();
         if (json.data && Array.isArray(json.data)) {
-          tvResults = json.data.map((item: any) => {
-            const row = item.d;
-            return {
-              name: row[0],
-              close: row[1],
-              change: row[2],
-              open: row[3],
-              high: row[4],
-              low: row[5],
-              volume: row[6],
-              RSI: row[7],
-              Stoch_K: row[8],
-              Stoch_D: row[9],
-              MACD_macd: row[10],
-              MACD_signal: row[11],
-              BB_lower: row[12],
-              BB_upper: row[13],
-              average_volume_10d_calc: row[14],
-              gap: row[15],
-              EMA20: row[16],
-              EMA50: row[17],
-              EMA200: row[18],
-              description: row[19],
-              type: row[20],
-              typespecs: row[21],
-              sector: row[22],
-              SMA200: row[23],
-              exchange: row[24],
-            };
-          });
+          rawItems.push(...json.data);
         }
       }
+
+      if (respScanner.status === 'fulfilled' && respScanner.value.ok) {
+        const json = await respScanner.value.json();
+        if (json.data && Array.isArray(json.data)) {
+          rawItems.push(...json.data);
+        }
+      }
+
+      tvResults = rawItems.map((item: any) => {
+        const row = item.d;
+        return {
+          name: row[0],
+          close: row[1],
+          change: row[2],
+          open: row[3],
+          high: row[4],
+          low: row[5],
+          volume: row[6],
+          RSI: row[7],
+          Stoch_K: row[8],
+          Stoch_D: row[9],
+          MACD_macd: row[10],
+          MACD_signal: row[11],
+          BB_lower: row[12],
+          BB_upper: row[13],
+          average_volume_10d_calc: row[14],
+          gap: row[15],
+          EMA20: row[16],
+          EMA50: row[17],
+          EMA200: row[18],
+          description: row[19],
+          type: row[20],
+          typespecs: row[21],
+          sector: row[22],
+          SMA200: row[23],
+          exchange: row[24],
+        };
+      });
     } catch (err) {
-      console.warn('TradingView scanner live fetch error, falling back to curated assets:', err);
+      console.warn('TradingView scanner live fetch error:', err);
     }
 
     // Process rows into unified AssetOpportunity items
     const opportunities: any[] = [];
-
-    const curatedUSList = [
-      { ticker: 'NVDA', name: 'NVIDIA Corporation', exchange: 'NASDAQ', index: 'S&P 500', classe: 'Nasdaq', setor: 'Tecnologia', close: 118.50, change: -2.85, rsi: 28.4, stoch: 16.2, vol: 5800000000, gap: -0.65, ema20: 124.20, ema50: 121.80, ema200: 104.50 },
-      { ticker: 'AAPL', name: 'Apple Inc.', exchange: 'NASDAQ', index: 'S&P 500', classe: 'Nasdaq', setor: 'Tecnologia', close: 224.30, change: -1.75, rsi: 31.8, stoch: 19.5, vol: 8200000000, gap: -0.35, ema20: 228.60, ema50: 226.40, ema200: 205.80 },
-      { ticker: 'TSLA', name: 'Tesla Inc.', exchange: 'NASDAQ', index: 'S&P 500', classe: 'Nasdaq', setor: 'Consumo & Varejo', close: 215.60, change: -3.80, rsi: 24.2, stoch: 12.1, vol: 9400000000, gap: -1.10, ema20: 229.50, ema50: 234.00, ema200: 210.40 },
-      { ticker: 'MSFT', name: 'Microsoft Corp.', exchange: 'NASDAQ', index: 'S&P 500', classe: 'Nasdaq', setor: 'Tecnologia', close: 412.20, change: -1.45, rsi: 33.6, stoch: 23.4, vol: 6100000000, gap: -0.25, ema20: 418.50, ema50: 416.80, ema200: 402.10 },
-      { ticker: 'AMZN', name: 'Amazon.com Inc.', exchange: 'NASDAQ', index: 'S&P 500', classe: 'Nasdaq', setor: 'Consumo & Varejo', close: 178.40, change: -2.10, rsi: 29.5, stoch: 18.0, vol: 5400000000, gap: -0.45, ema20: 184.20, ema50: 183.10, ema200: 172.90 },
-      { ticker: 'META', name: 'Meta Platforms Inc.', exchange: 'NASDAQ', index: 'S&P 500', classe: 'Nasdaq', setor: 'Tecnologia', close: 495.80, change: -2.40, rsi: 27.8, stoch: 15.6, vol: 4900000000, gap: -0.55, ema20: 512.40, ema50: 508.60, ema200: 475.20 },
-      { ticker: 'GOOGL', name: 'Alphabet Inc.', exchange: 'NASDAQ', index: 'S&P 500', classe: 'Nasdaq', setor: 'Tecnologia', close: 156.80, change: -1.65, rsi: 32.4, stoch: 21.8, vol: 3800000000, gap: -0.30, ema20: 161.20, ema50: 163.50, ema200: 152.00 },
-      { ticker: 'AMD', name: 'Advanced Micro Devices', exchange: 'NASDAQ', index: 'S&P 500', classe: 'Nasdaq', setor: 'Tecnologia', close: 142.30, change: -3.45, rsi: 25.1, stoch: 13.9, vol: 4200000000, gap: -0.90, ema20: 151.80, ema50: 156.20, ema200: 154.50 },
-      { ticker: 'PLTR', name: 'Palantir Technologies', exchange: 'NASDAQ', index: 'S&P 500', classe: 'Nasdaq', setor: 'Tecnologia', close: 36.80, change: -2.90, rsi: 26.9, stoch: 14.8, vol: 2900000000, gap: -0.75, ema20: 39.50, ema50: 37.80, ema200: 29.40 },
-      { ticker: 'JPM', name: 'JPMorgan Chase & Co.', exchange: 'NYSE', index: 'S&P 500', classe: 'NYSE', setor: 'Financeiro & Bancos', close: 206.40, change: -1.35, rsi: 34.2, stoch: 24.1, vol: 2700000000, gap: -0.20, ema20: 210.80, ema50: 208.50, ema200: 194.20 },
-      { ticker: 'BRK-B', name: 'Berkshire Hathaway Cl B', exchange: 'NYSE', index: 'S&P 500', classe: 'NYSE', setor: 'Financeiro & Bancos', close: 442.10, change: -0.85, rsi: 38.5, stoch: 31.0, vol: 1800000000, gap: -0.15, ema20: 446.50, ema50: 444.20, ema200: 418.00 },
-      { ticker: 'XOM', name: 'Exxon Mobil Corp.', exchange: 'NYSE', index: 'S&P 500', classe: 'NYSE', setor: 'Petróleo & Gás', close: 114.80, change: -2.25, rsi: 28.1, stoch: 17.4, vol: 2300000000, gap: -0.50, ema20: 118.60, ema50: 117.90, ema200: 112.50 },
-      { ticker: 'LLY', name: 'Eli Lilly and Company', exchange: 'NYSE', index: 'S&P 500', classe: 'NYSE', setor: 'Saúde', close: 885.20, change: -2.15, rsi: 30.2, stoch: 19.8, vol: 2600000000, gap: -0.40, ema20: 915.00, ema50: 902.50, ema200: 810.00 },
-      { ticker: 'DIS', name: 'Walt Disney Company', exchange: 'NYSE', index: 'S&P 500', classe: 'NYSE', setor: 'Comunicações', close: 92.40, change: -2.60, rsi: 23.5, stoch: 11.4, vol: 1950000000, gap: -0.70, ema20: 96.80, ema50: 98.50, ema200: 99.20 },
-      { ticker: 'WMT', name: 'Walmart Inc.', exchange: 'NYSE', index: 'S&P 500', classe: 'NYSE', setor: 'Consumo & Varejo', close: 76.50, change: -1.10, rsi: 36.4, stoch: 28.0, vol: 2100000000, gap: -0.18, ema20: 78.20, ema50: 76.90, ema200: 69.80 },
-      { ticker: 'CAT', name: 'Caterpillar Inc.', exchange: 'NYSE', index: 'S&P 500', classe: 'NYSE', setor: 'Transporte & Indústria', close: 338.40, change: -2.75, rsi: 27.2, stoch: 16.5, vol: 1750000000, gap: -0.60, ema20: 352.00, ema50: 348.60, ema200: 332.10 },
-      { ticker: 'SPY', name: 'SPDR S&P 500 ETF Trust', exchange: 'NYSE', index: 'S&P 500', classe: 'ETF', setor: 'ETFs & Índices', close: 546.80, change: -1.35, rsi: 32.5, stoch: 22.0, vol: 38000000000, gap: -0.30, ema20: 554.20, ema50: 551.80, ema200: 518.50 },
-      { ticker: 'QQQ', name: 'Invesco QQQ (Nasdaq 100)', exchange: 'NASDAQ', index: 'Nasdaq 100', classe: 'ETF', setor: 'ETFs & Índices', close: 468.20, change: -1.95, rsi: 29.8, stoch: 18.5, vol: 24000000000, gap: -0.45, ema20: 479.50, ema50: 476.20, ema200: 442.00 },
-      { ticker: 'IWM', name: 'iShares Russell 2000 ETF', exchange: 'NYSE', index: 'Russell', classe: 'ETF', setor: 'ETFs & Índices', close: 212.40, change: -2.30, rsi: 26.5, stoch: 14.2, vol: 8200000000, gap: -0.65, ema20: 219.80, ema50: 218.40, ema200: 206.50 },
-      { ticker: 'XLK', name: 'Technology Select SPDR', exchange: 'NYSE', index: 'S&P 500', classe: 'ETF', setor: 'ETFs & Índices', close: 218.90, change: -2.40, rsi: 28.0, stoch: 16.0, vol: 4500000000, gap: -0.55, ema20: 226.50, ema50: 224.80, ema200: 208.20 },
-      { ticker: 'SMH', name: 'VanEck Semiconductor ETF', exchange: 'NASDAQ', index: 'Nasdaq 100', classe: 'ETF', setor: 'ETFs & Índices', close: 234.50, change: -3.60, rsi: 23.8, stoch: 12.0, vol: 5100000000, gap: -1.05, ema20: 248.60, ema50: 245.20, ema200: 220.40 },
-      { ticker: 'XLF', name: 'Financial Select SPDR', exchange: 'NYSE', index: 'S&P 500', classe: 'ETF', setor: 'ETFs & Índices', close: 43.80, change: -1.15, rsi: 35.0, stoch: 25.4, vol: 2200000000, gap: -0.20, ema20: 44.60, ema50: 44.20, ema200: 41.50 },
-      { ticker: 'ARKK', name: 'ARK Innovation ETF', exchange: 'NYSE', index: 'Growth', classe: 'ETF', setor: 'ETFs & Índices', close: 44.10, change: -4.10, rsi: 21.0, stoch: 9.5, vol: 1600000000, gap: -1.25, ema20: 47.80, ema50: 48.50, ema200: 46.20 },
-      { ticker: 'GLD', name: 'SPDR Gold Shares ETF', exchange: 'NYSE', index: 'Commodities', classe: 'ETF', setor: 'ETFs & Índices', close: 231.20, change: -0.75, rsi: 41.2, stoch: 34.0, vol: 2800000000, gap: -0.10, ema20: 233.50, ema50: 230.80, ema200: 215.40 },
-    ];
+    const seenTickers = new Set<string>();
 
     if (tvResults.length > 0) {
       for (const row of tvResults) {
         let rawTicker = String(row.name || '').split(':').pop() || '';
+        if (!rawTicker || seenTickers.has(rawTicker)) continue;
+
         const close = Number(row.close) || 0;
         const change = Number(row.change) || 0;
-        if (close <= 0 || change >= 0) continue;
+        const volume = Number(row.volume) || 0;
+
+        // Strictly reject penny stocks, dead OTC issues or invalid quotes
+        if (close < 1.0 || volume < 10000 || isNaN(close)) continue;
+
+        seenTickers.add(rawTicker);
 
         const exchange = row.exchange || (NASDAQ_SET.has(rawTicker) ? 'NASDAQ' : 'NYSE');
         const classe = classificarAtivo(rawTicker, row.type, row.typespecs, exchange);
@@ -330,15 +380,18 @@ app.post('/api/scan', async (req, res) => {
         const ema200 = typeof row.EMA200 === 'number' && !isNaN(row.EMA200) && row.EMA200 > 0
           ? Number(row.EMA200.toFixed(2))
           : (typeof row.SMA200 === 'number' && !isNaN(row.SMA200) && row.SMA200 > 0 ? Number(row.SMA200.toFixed(2)) : undefined);
-        const volMed = Number(row.average_volume_10d_calc) || Number(row.volume) || 0;
+        const volMed = Number(row.average_volume_10d_calc) || volume;
         const volFin = volMed * close;
         const gap = Number(row.gap) || 0;
         const isIndex = ((100 - rsi) + (100 - stoch)) / 2;
-        const liquidez = calcularLiquidez(volMed, close, row.volume);
+        const liquidez = calcularLiquidez(volMed, close, volume, market === 'usa' || !market);
+
+        const prevClose = change !== 0 ? close / (1 + change / 100) : close;
+        const variacaoAbs = close - prevClose;
 
         const { sinais, explicacoes, score, potencial } = gerarSinais(close, rsi, stoch, macdHist, ema20, ema50, ema200);
 
-        let indexTag = SP500_SET.has(rawTicker) ? 'S&P 500' : (NASDAQ_SET.has(rawTicker) ? 'Nasdaq 100' : 'NYSE');
+        let indexTag = SP500_SET.has(rawTicker) ? 'S&P 500' : (NASDAQ_SET.has(rawTicker) ? 'Nasdaq 100' : (US_ETFS.has(rawTicker) ? 'ETF' : 'NYSE'));
 
         opportunities.push({
           Ticker: rawTicker,
@@ -346,6 +399,8 @@ app.post('/api/scan', async (req, res) => {
           Classe: classe,
           Setor: setor,
           Preco: Number(close.toFixed(2)),
+          Fechamento_Anterior: Number(prevClose.toFixed(2)),
+          Variacao_Abs: Number(variacaoAbs.toFixed(2)),
           Volume: Number(volFin.toFixed(0)),
           Queda_Dia: Number(change.toFixed(2)),
           Gap: Number(gap.toFixed(2)),
@@ -364,40 +419,6 @@ app.post('/api/scan', async (req, res) => {
           index: indexTag,
           currency: 'USD',
         });
-      }
-    }
-
-    // Merge or fallback to curated list if empty
-    if (opportunities.length < 5) {
-      for (const item of curatedUSList) {
-        if (!opportunities.some(o => o.Ticker === item.ticker)) {
-          const isIndex = ((100 - item.rsi) + (100 - item.stoch)) / 2;
-          const { sinais, explicacoes, score, potencial } = gerarSinais(item.close, item.rsi, item.stoch, 0.2, item.ema20, item.ema50, item.ema200);
-          opportunities.push({
-            Ticker: item.ticker,
-            Empresa: item.name,
-            Classe: item.classe as any,
-            Setor: (item as any).setor || resolverSetor(item.ticker, undefined, item.classe),
-            Preco: item.close,
-            Volume: item.vol,
-            Queda_Dia: item.change,
-            Gap: item.gap,
-            IS: Number(isIndex.toFixed(1)),
-            RSI14: item.rsi,
-            Stoch: item.stoch,
-            Potencial: potencial,
-            Score: score,
-            Sinais: sinais.join(', '),
-            Explicacoes: explicacoes,
-            Liquidez: calcularLiquidez(item.vol / item.close, item.close, item.vol / item.close),
-            EMA20: item.ema20,
-            EMA50: item.ema50,
-            EMA200: item.ema200,
-            exchange: (item as any).exchange || 'NASDAQ',
-            index: (item as any).index || 'S&P 500',
-            currency: 'USD',
-          });
-        }
       }
     }
 
