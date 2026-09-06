@@ -6,6 +6,7 @@ import { OpportunitiesTable } from './components/OpportunitiesTable';
 import { AssetDetailPanel, TabType } from './components/AssetDetailPanel';
 import { ScienceBitLogo } from './components/ScienceBitLogo';
 import { PlayStoreKitModal } from './components/PlayStoreKitModal';
+import { PrivacyPolicyModal } from './components/PrivacyPolicyModal';
 import { useLanguage } from './i18n/LanguageContext';
 
 import {
@@ -81,6 +82,7 @@ export const App: React.FC = () => {
   const [isScanning, setIsScanning] = useState<boolean>(false);
   const [selectedTicker, setSelectedTicker] = useState<string | null>('NVDA');
   const [isKitModalOpen, setIsKitModalOpen] = useState<boolean>(false);
+  const [isPrivacyModalOpen, setIsPrivacyModalOpen] = useState<boolean>(false);
 
   // Active Asset Analysis State
   const [timeframe, setTimeframe] = useState<string>('1d');
@@ -328,17 +330,15 @@ export const App: React.FC = () => {
                 <Download className="w-3 h-3" />
                 <span>Kit Google Play (Fotos &amp; Assets)</span>
               </button>
-              <a
+              <button
                 id="footer-btn-privacy"
-                href="/privacy.html"
-                target="_blank"
-                rel="noreferrer"
-                className="inline-flex items-center gap-1.5 text-slate-300 hover:text-white transition text-[11px] font-medium bg-slate-800 hover:bg-slate-750 border border-slate-700 px-2.5 py-1 rounded-lg"
+                type="button"
+                onClick={() => setIsPrivacyModalOpen(true)}
+                className="inline-flex items-center gap-1.5 text-slate-300 hover:text-white transition text-[11px] font-medium bg-slate-800 hover:bg-slate-750 border border-slate-700 px-2.5 py-1 rounded-lg cursor-pointer"
               >
                 <FileText className="w-3 h-3 text-blue-400" />
                 <span>Política de Privacidade</span>
-                <ExternalLink className="w-2.5 h-2.5 opacity-60" />
-              </a>
+              </button>
               <span className="text-slate-600 hidden sm:inline">|</span>
               <span className="text-slate-400">
                 © {new Date().getFullYear()} ScienceBit Computer. Todos os direitos reservados.
@@ -370,6 +370,12 @@ export const App: React.FC = () => {
         isOpen={isKitModalOpen}
         onClose={() => setIsKitModalOpen(false)}
         appUrl={typeof window !== 'undefined' ? window.location.origin : ''}
+      />
+
+      {/* Privacy Policy Modal */}
+      <PrivacyPolicyModal
+        isOpen={isPrivacyModalOpen}
+        onClose={() => setIsPrivacyModalOpen(false)}
       />
     </div>
   );

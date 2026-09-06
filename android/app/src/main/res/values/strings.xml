@@ -1,7 +1,7 @@
 <?xml version='1.0' encoding='utf-8'?>
 <resources>
-    <string name="app_name">Monitor B3</string>
-    <string name="title_activity_main">Monitor B3</string>
-    <string name="package_name">com.monitorb3.app</string>
-    <string name="custom_url_scheme">com.monitorb3.app</string>
+    <string name="app_name">Wall Street Scanner</string>
+    <string name="title_activity_main">Wall Street Scanner</string>
+    <string name="package_name">com.sciencebit.wallstreetscanner</string>
+    <string name="custom_url_scheme">com.sciencebit.wallstreetscanner</string>
 </resources>

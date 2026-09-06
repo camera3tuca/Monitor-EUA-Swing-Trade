@@ -1,0 +1,37 @@
+===========================================================
+WALL STREET SCANNER - SWING TRADE PRO
+KIT DE ASSETS & INFORMACOES PARA GOOGLE PLAY STORE & WEB宣传
+Desenvolvido por ScienceBit Computer (https://sciencebit.com.br)
+===========================================================
+
+CONTEUDO DESTE PACOTE ZIP:
+
+1. playstore-icon-512.png
+   - Formato: 512 x 512 px PNG (32-bit com canal alfa)
+   - Uso: Icone oficial do app no Google Play Console e WebIntoApp.
+
+2. playstore-feature-graphic-1024x500.png
+   - Formato: 1024 x 500 px PNG
+   - Uso: Grafico de Recursos (Feature Graphic) obrigatorio na Ficha da Loja Google Play.
+
+3. Capturas de Tela (Screenshots para Ficha da Loja):
+   - screenshot-1-scanner.png (Scanner de Sobrevenda & Rankings)
+   - screenshot-2-indicadores.png (Painel de Indicadores RSI, MACD, Estocastico)
+   - screenshot-3-ia-modelos.png (Modelos Preditivos de Swing Trade)
+   - screenshot-4-triple-screen.png (Alexander Elder Triple Screen & Fibonacci)
+   - screenshot-mobile.png e screenshot-wide.png (Telas complementares)
+
+4. Logos ScienceBit Computer:
+   - sciencebit-logo.svg / sciencebit-logo.png
+   - sciencebit-logo-white.svg / sciencebit-logo-white.png
+
+5. Documentos Legais e Configuracao:
+   - privacy.html (Politica de Privacidade completa em conformidade com Google Play)
+   - manifest.json (Configuracoes de PWA e identificacao nativa)
+
+DADOS PARA O WEB宣传INTOAPP:
+- App URL: https://ais-pre-ytsj4kie7lwtur34wzj5nf-45073816214.us-west2.run.app
+- App Name: Wall Street Scanner
+- Package Name: com.sciencebit.wallstreetscanner
+- Formato: Android App Bundle (.AAB)
+- Politica de Privacidade URL: https://ais-pre-ytsj4kie7lwtur34wzj5nf-45073816214.us-west2.run.app/privacy.html

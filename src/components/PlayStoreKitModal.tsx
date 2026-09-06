@@ -38,42 +38,58 @@ export const PlayStoreKitModal: React.FC<PlayStoreKitModalProps> = ({
     {
       id: 'feature',
       title: 'Gráfico de Recursos (Feature Graphic)',
-      desc: 'Banner de destaque obrigatório na Ficha da Loja',
+      desc: 'Banner de destaque obrigatório na Ficha da Loja (1024x500)',
       src: '/playstore-feature-graphic-1024x500.png',
       aspect: 'aspect-[1024/500]',
       dims: '1024x500 px'
+    },
+    {
+      id: 'screen-wide',
+      title: 'Screenshot Panorâmico (Desktop/Tablet)',
+      desc: 'Tabela quantitativa completa com cotações e rankings de Wall Street',
+      src: '/screenshot-wide.png',
+      aspect: 'aspect-[16/9]',
+      dims: '1280x720 px'
+    },
+    {
+      id: 'screen-mobile',
+      title: 'Screenshot Vertical (Mobile)',
+      desc: 'Gráficos técnicos, Fibonacci áureo e indicadores de sobrevenda',
+      src: '/screenshot-mobile.png',
+      aspect: 'aspect-[9/16]',
+      dims: '720x1280 px'
     },
     {
       id: 'screen1',
       title: 'Screenshot 1 - Scanner de Sobrevenda',
       desc: 'Tela principal com tabela quantitativa e ranking de oportunidades',
       src: '/screenshot-1-scanner.png',
-      aspect: 'aspect-[16/9]',
-      dims: '1920x1080 px'
+      aspect: 'aspect-[9/16]',
+      dims: '1080x1920 px'
     },
     {
       id: 'screen2',
       title: 'Screenshot 2 - Indicadores Técnicos',
       desc: 'Gráficos de RSI(14), Estocástico, MACD e Médias Móveis',
       src: '/screenshot-2-indicadores.png',
-      aspect: 'aspect-[16/9]',
-      dims: '1920x1080 px'
+      aspect: 'aspect-[9/16]',
+      dims: '1080x1920 px'
     },
     {
       id: 'screen3',
       title: 'Screenshot 3 - Modelos IA Preditivos',
       desc: 'Projeções de retorno, probabilidade e stops automatizados',
       src: '/screenshot-3-ia-modelos.png',
-      aspect: 'aspect-[16/9]',
-      dims: '1920x1080 px'
+      aspect: 'aspect-[9/16]',
+      dims: '1080x1920 px'
     },
     {
       id: 'screen4',
       title: 'Screenshot 4 - Triple Screen & Fibonacci',
       desc: 'Análise de múltiplos tempos gráficos e zonas áureas de retração',
       src: '/screenshot-4-triple-screen.png',
-      aspect: 'aspect-[16/9]',
-      dims: '1920x1080 px'
+      aspect: 'aspect-[9/16]',
+      dims: '1080x1920 px'
     }
   ];
 
@@ -228,18 +244,23 @@ export const PlayStoreKitModal: React.FC<PlayStoreKitModalProps> = ({
             </div>
 
             {/* Privacy Policy URL */}
-            <div className="bg-slate-800/50 border border-slate-750 rounded-xl p-2.5 flex items-center justify-between gap-3">
-              <div className="truncate text-xs">
-                <span className="text-slate-400 block text-[10px] uppercase font-bold">Política de Privacidade (Google Play):</span>
-                <span className="font-mono text-blue-400 truncate select-all">{privacyUrl}</span>
+            <div className="bg-slate-800/50 border border-slate-750 rounded-xl p-2.5 space-y-2">
+              <div className="flex items-center justify-between gap-3">
+                <div className="truncate text-xs">
+                  <span className="text-slate-400 block text-[10px] uppercase font-bold">Política de Privacidade (URL no app):</span>
+                  <span className="font-mono text-blue-400 truncate select-all">{privacyUrl}</span>
+                </div>
+                <button
+                  onClick={() => handleCopy(privacyUrl, 'privacy')}
+                  className="shrink-0 flex items-center gap-1 text-xs bg-slate-700 hover:bg-slate-600 text-white px-2.5 py-1.5 rounded-lg transition cursor-pointer"
+                >
+                  {copiedKey === 'privacy' ? <Check className="w-3.5 h-3.5 text-emerald-400" /> : <Copy className="w-3.5 h-3.5" />}
+                  <span>{copiedKey === 'privacy' ? 'Copiado!' : 'Copiar'}</span>
+                </button>
               </div>
-              <button
-                onClick={() => handleCopy(privacyUrl, 'privacy')}
-                className="shrink-0 flex items-center gap-1 text-xs bg-slate-700 hover:bg-slate-600 text-white px-2.5 py-1.5 rounded-lg transition"
-              >
-                {copiedKey === 'privacy' ? <Check className="w-3.5 h-3.5 text-emerald-400" /> : <Copy className="w-3.5 h-3.5" />}
-                <span>{copiedKey === 'privacy' ? 'Copiado!' : 'Copiar'}</span>
-              </button>
+              <p className="text-[10px] text-amber-300/90 leading-tight bg-amber-500/10 border border-amber-500/20 p-2 rounded-lg">
+                💡 <strong>Dica para o Google Play Console:</strong> Como os robôs da Google Play não aceitam links com autenticação ou cookies de preview, você também pode hospedar o arquivo <code className="text-white">privacy.html</code> gratuitamente no <strong>GitHub Pages</strong> ou no seu domínio <code className="text-white">sciencebit.com.br/privacy.html</code>.
+              </p>
             </div>
 
             {/* Package Name */}

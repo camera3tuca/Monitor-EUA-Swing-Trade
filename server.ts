@@ -1,6 +1,7 @@
 import express from 'express';
 import cors from 'cors';
 import path from 'path';
+import fs from 'fs';
 import { createServer as createViteServer } from 'vite';
 
 const app = express();
@@ -232,6 +233,17 @@ app.get('/api/download-assets', (req, res) => {
       res.status(500).json({ error: 'Erro ao transferir arquivo zip de assets' });
     }
   });
+});
+
+// ── Route: Privacy Policy (Google Play Compliance) ──
+app.all(['/privacy', '/privacy.html'], (req, res) => {
+  const pubFile = path.join(process.cwd(), 'public', 'privacy.html');
+  const distFile = path.join(process.cwd(), 'dist', 'privacy.html');
+  const file = fs.existsSync(pubFile) ? pubFile : distFile;
+  res.setHeader('Content-Type', 'text/html; charset=utf-8');
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  res.setHeader('Cache-Control', 'public, max-age=86400');
+  return res.status(200).sendFile(file);
 });
 
 // ── API: Scan Opportunities (Wall Street / US) ──

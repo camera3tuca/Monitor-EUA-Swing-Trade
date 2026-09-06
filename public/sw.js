@@ -1,4 +1,4 @@
-const CACHE_NAME = 'monitor-b3-v2';
+const CACHE_NAME = 'wallstreet-scanner-v3';
 const ASSETS_TO_CACHE = [
   '/',
   '/index.html',

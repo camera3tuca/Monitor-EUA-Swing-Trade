@@ -1,4 +1,18 @@
+import sharp from 'sharp';
+import fs from 'fs';
+import path from 'path';
+import { execSync } from 'child_process';
 
+async function generateNewIcon() {
+  const publicDir = path.join(process.cwd(), 'public');
+
+  // New Differentiated Wall Street Icon SVG (512x512)
+  // Features:
+  // 1. Distinctive Charging Wall Street Bull silhouette in polished gold & cyan
+  // 2. High-tech Radar / Sonar Scanner Reticle (symbolizing the algorithmic scanner)
+  // 3. Dynamic Oversold-to-Breakout Candlestick foundation with glowing EMA trend curve
+  // 4. Prominent "WALL ST" top crest and high-contrast sapphire dark background
+  const iconSvg = `
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
   <defs>
     <!-- Background Radial Gradient -->
@@ -200,3 +214,36 @@
     <text x="150" y="24" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="13" font-weight="900" fill="#fbbf24">★</text>
   </g>
 </svg>
+`;
+
+  const outSvg = path.join(publicDir, 'icon.svg');
+  fs.writeFileSync(outSvg, iconSvg);
+  console.log('✓ icon.svg written successfully');
+
+  // Generate icon-512.png, playstore-icon-512.png, icon-192.png
+  const iconBuf = Buffer.from(iconSvg);
+  await sharp(iconBuf)
+    .resize(512, 512)
+    .png({ quality: 100 })
+    .toFile(path.join(publicDir, 'playstore-icon-512.png'));
+  console.log('✓ playstore-icon-512.png generated (512x512)');
+
+  await sharp(iconBuf)
+    .resize(512, 512)
+    .png({ quality: 100 })
+    .toFile(path.join(publicDir, 'icon-512.png'));
+  console.log('✓ icon-512.png generated (512x512)');
+
+  await sharp(iconBuf)
+    .resize(192, 192)
+    .png({ quality: 100 })
+    .toFile(path.join(publicDir, 'icon-192.png'));
+  console.log('✓ icon-192.png generated (192x192)');
+
+  // Also update generate-all-assets.js to run and refresh the zip archive and feature graphic
+  console.log('Updating assets pack...');
+  execSync('node generate-all-assets.js', { cwd: process.cwd(), stdio: 'inherit' });
+  console.log('✓ All assets and zip package updated with the new distinct Wall Street Bull icon!');
+}
+
+generateNewIcon().catch(console.error);
