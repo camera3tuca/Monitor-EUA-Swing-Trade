@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { X, Download, Copy, Check, ExternalLink, ShieldCheck, Sparkles, Image as ImageIcon } from 'lucide-react';
+import { X, Download, Copy, Check, ExternalLink, ShieldCheck, Sparkles, Image as ImageIcon, Globe } from 'lucide-react';
 import { motion } from 'motion/react';
 
 interface PlayStoreKitModalProps {
@@ -276,6 +276,75 @@ export const PlayStoreKitModal: React.FC<PlayStoreKitModalProps> = ({
                 {copiedKey === 'pkg' ? <Check className="w-3.5 h-3.5 text-emerald-400" /> : <Copy className="w-3.5 h-3.5" />}
                 <span>{copiedKey === 'pkg' ? 'Copiado!' : 'Copiar'}</span>
               </button>
+            </div>
+
+            {/* English Play Store Listing Copy */}
+            <div className="mt-4 pt-4 border-t border-slate-800 space-y-3">
+              <h4 className="text-xs font-bold uppercase tracking-wider text-emerald-400 flex items-center gap-1.5">
+                <Globe className="w-4 h-4 text-emerald-400" />
+                English Store Listing (Google Play Console)
+              </h4>
+
+              {/* English App Title */}
+              <div className="bg-slate-800/50 border border-slate-750 rounded-xl p-2.5 flex items-center justify-between gap-3">
+                <div className="truncate text-xs">
+                  <span className="text-slate-400 block text-[10px] uppercase font-bold">App Title (≤30 chars):</span>
+                  <span className="font-medium text-white truncate select-all">Wall Street Scanner Pro</span>
+                </div>
+                <button
+                  onClick={() => handleCopy('Wall Street Scanner Pro', 'enTitle')}
+                  className="shrink-0 flex items-center gap-1 text-xs bg-slate-700 hover:bg-slate-600 text-white px-2.5 py-1.5 rounded-lg transition"
+                >
+                  {copiedKey === 'enTitle' ? <Check className="w-3.5 h-3.5 text-emerald-400" /> : <Copy className="w-3.5 h-3.5" />}
+                  <span>{copiedKey === 'enTitle' ? 'Copied!' : 'Copy'}</span>
+                </button>
+              </div>
+
+              {/* English Short Description */}
+              <div className="bg-slate-800/50 border border-slate-750 rounded-xl p-2.5 flex items-center justify-between gap-3">
+                <div className="truncate text-xs">
+                  <span className="text-slate-400 block text-[10px] uppercase font-bold">Short Description (≤80 chars):</span>
+                  <span className="font-medium text-emerald-300 truncate select-all">Real-time swing trade scanner &amp; quantitative technical indicators for US stocks.</span>
+                </div>
+                <button
+                  onClick={() => handleCopy('Real-time swing trade scanner & quantitative technical indicators for US stocks.', 'enShortDesc')}
+                  className="shrink-0 flex items-center gap-1 text-xs bg-slate-700 hover:bg-slate-600 text-white px-2.5 py-1.5 rounded-lg transition"
+                >
+                  {copiedKey === 'enShortDesc' ? <Check className="w-3.5 h-3.5 text-emerald-400" /> : <Copy className="w-3.5 h-3.5" />}
+                  <span>{copiedKey === 'enShortDesc' ? 'Copied!' : 'Copy'}</span>
+                </button>
+              </div>
+
+              {/* English Full Description */}
+              <div className="bg-slate-800/50 border border-slate-750 rounded-xl p-3 space-y-2">
+                <div className="flex items-center justify-between gap-3">
+                  <span className="text-slate-400 block text-[10px] uppercase font-bold">Full Description (Google Play):</span>
+                  <button
+                    onClick={() => handleCopy(`Take your swing trading to the institutional level with Wall Street Scanner Pro.
+
+Wall Street Scanner Pro is a quantitative market scanner and technical screening terminal engineered specifically for retail and professional traders navigating US equity markets (NYSE, NASDAQ, S&P 500, Nasdaq-100, and leading sector ETFs in USD).
+
+KEY FEATURES:
+• Real-Time Swing Trade Scanner: Continuously tracks hundreds of top US stocks to detect high-probability mean-reversion setups, oversold bounces, and breakout continuations.
+• Institutional Technical Indicators: RSI(14) with overbought/oversold bands, MACD (12, 26, 9), EMA 9/21/50/200 crossovers, Bollinger Bands, and Volume Spikes.
+• Dr. Alexander Elder's Triple Screen System: Multi-timeframe trend alignment combining weekly market tide with daily wave oscillators for disciplined trade entries.
+• Mark Minervini Trend Template: Automated checklist verifying stage 2 uptrends, moving average alignment, and relative strength.
+• Quantitative AI & ML Projections: Statistical ensemble models, 5-day return forecasting, and institutional order flow pressure metrics.
+• Real-Time Wall Street News & Sentiment: Aggregated sentiment analysis across financial wire reports and catalyst feeds.
+• International Multi-Language Support: Seamlessly switch between English, Portuguese, Spanish, French, and German.
+• Ultra-fast Dark Terminal UI: Optimized for mobile and tablet with zero bloat and high-contrast charts.
+
+Disclaimer: Wall Street Scanner Pro is an educational and analytical tool designed to assist in technical market research. It does not provide personalized investment advice or guarantee financial returns. Always manage risk responsibly.`, 'enFullDesc')}
+                    className="shrink-0 flex items-center gap-1 text-xs bg-emerald-600 hover:bg-emerald-500 text-white px-3 py-1.5 rounded-lg transition font-medium"
+                  >
+                    {copiedKey === 'enFullDesc' ? <Check className="w-3.5 h-3.5 text-white" /> : <Copy className="w-3.5 h-3.5" />}
+                    <span>{copiedKey === 'enFullDesc' ? 'Copied Description!' : 'Copy Full Description'}</span>
+                  </button>
+                </div>
+                <p className="text-[11px] text-slate-400 line-clamp-3">
+                  Take your swing trading to the institutional level with Wall Street Scanner Pro. Engineered for US equity markets (NYSE, NASDAQ, S&P 500, ETFs) with real-time RSI, MACD, Triple Screen, and AI models...
+                </p>
+              </div>
             </div>
           </div>
         </div>

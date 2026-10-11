@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Clock, ShieldCheck, ChevronDown, ChevronUp, BookOpen, Sparkles, Globe, DollarSign, Download } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
-import { useLanguage } from '../i18n/LanguageContext';
+import { useLanguage, SUPPORTED_LANGUAGES } from '../i18n/LanguageContext';
 import { MarketUniverse } from '../types';
 import { ScienceBitLogo } from './ScienceBitLogo';
 
@@ -23,6 +23,7 @@ interface HeaderProps {
 export const Header: React.FC<HeaderProps> = ({ onOpenPlayStoreKit }) => {
   const { language, setLanguage, t } = useLanguage();
   const [timeStr, setTimeStr] = useState<string>('');
+  const [isLangMenuOpen, setIsLangMenuOpen] = useState<boolean>(false);
   const [marketStatus, setMarketStatus] = useState<MarketStatus>({
     status: 'fechada',
     label: 'Market Closed',
@@ -158,34 +159,80 @@ export const Header: React.FC<HeaderProps> = ({ onOpenPlayStoreKit }) => {
             <span>Wall Street (US$)</span>
           </div>
 
-          {/* Language Switcher: PT / EN */}
-          <div className="flex items-center bg-slate-900/90 border border-slate-700/80 p-0.5 rounded-xl shadow-inner">
+          {/* International Multi-Language Selector */}
+          <div className="relative">
             <button
-              id="btn-lang-pt"
+              id="btn-lang-selector"
               type="button"
-              onClick={() => setLanguage('pt')}
-              className={`px-2.5 py-1.5 rounded-lg font-bold text-xs transition cursor-pointer ${
-                language === 'pt'
-                  ? 'bg-emerald-600 text-white shadow-sm'
-                  : 'text-slate-400 hover:text-slate-200'
-              }`}
-              title="Português"
+              onClick={() => setIsLangMenuOpen(!isLangMenuOpen)}
+              className="flex items-center gap-1.5 bg-slate-900/90 hover:bg-slate-850 border border-slate-700/80 hover:border-slate-600 px-2.5 py-1.5 rounded-xl font-bold text-xs text-slate-200 transition shadow-inner cursor-pointer"
+              title="Select Language / Selecionar Idioma"
             >
-              PT
+              <Globe className="w-3.5 h-3.5 text-blue-400" />
+              <span>{SUPPORTED_LANGUAGES.find((l) => l.code === language)?.flag || '🇺🇸'}</span>
+              <span className="uppercase font-bold tracking-wide">
+                {SUPPORTED_LANGUAGES.find((l) => l.code === language)?.code || 'EN'}
+              </span>
+              <ChevronDown
+                className={`w-3 h-3 text-slate-400 transition-transform duration-200 ${
+                  isLangMenuOpen ? 'rotate-180 text-blue-400' : ''
+                }`}
+              />
             </button>
-            <button
-              id="btn-lang-en"
-              type="button"
-              onClick={() => setLanguage('en')}
-              className={`px-2.5 py-1.5 rounded-lg font-bold text-xs transition cursor-pointer ${
-                language === 'en'
-                  ? 'bg-emerald-600 text-white shadow-sm'
-                  : 'text-slate-400 hover:text-slate-200'
-              }`}
-              title="English"
-            >
-              EN
-            </button>
+
+            {isLangMenuOpen && (
+              <>
+                <div
+                  className="fixed inset-0 z-40"
+                  onClick={() => setIsLangMenuOpen(false)}
+                />
+                <div className="absolute right-0 mt-2 w-48 bg-slate-900 border border-slate-700/90 rounded-2xl shadow-2xl py-1.5 z-50 overflow-hidden backdrop-blur-md animate-in fade-in zoom-in-95 duration-150">
+                  <div className="px-3 py-1.5 text-[10px] uppercase font-bold tracking-wider text-slate-400 border-b border-slate-800 flex items-center justify-between">
+                    <span>Language / Idioma</span>
+                    <span className="text-[9px] text-blue-400 font-normal">5 options</span>
+                  </div>
+                  <div className="p-1 space-y-0.5">
+                    {SUPPORTED_LANGUAGES.map((lang) => {
+                      const isSelected = language === lang.code;
+                      return (
+                        <button
+                          key={lang.code}
+                          type="button"
+                          onClick={() => {
+                            setLanguage(lang.code);
+                            setIsLangMenuOpen(false);
+                          }}
+                          className={`w-full flex items-center justify-between px-3 py-2 rounded-lg text-xs transition text-left cursor-pointer ${
+                            isSelected
+                              ? 'bg-blue-600 text-white font-bold shadow-sm'
+                              : 'text-slate-300 hover:bg-slate-800/80 hover:text-white'
+                          }`}
+                        >
+                          <div className="flex items-center gap-2.5">
+                            <span className="text-base leading-none">{lang.flag}</span>
+                            <div>
+                              <div className="leading-tight">{lang.nativeName}</div>
+                              <div className={`text-[10px] ${isSelected ? 'text-blue-100' : 'text-slate-500'}`}>
+                                {lang.name}
+                              </div>
+                            </div>
+                          </div>
+                          <span
+                            className={`text-[10px] font-mono uppercase px-1.5 py-0.5 rounded ${
+                              isSelected
+                                ? 'bg-blue-700/60 text-white'
+                                : 'bg-slate-800 text-slate-400'
+                            }`}
+                          >
+                            {lang.code}
+                          </span>
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+              </>
+            )}
           </div>
 
           {/* Market Status (Bolsa Aberta / Fechada) */}
