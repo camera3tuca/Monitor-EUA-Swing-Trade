@@ -29,67 +29,67 @@ export const PlayStoreKitModal: React.FC<PlayStoreKitModalProps> = ({
   const assets = [
     {
       id: 'icon',
-      title: 'Ícone Oficial (512x512)',
-      desc: 'Formato PNG exigido pela Google Play e WebIntoApp',
+      title: 'Official Icon (512x512)',
+      desc: 'Official 512x512 px PNG with alpha required by Google Play Console & WebIntoApp',
       src: '/playstore-icon-512.png',
       aspect: 'aspect-square',
       dims: '512x512 px'
     },
     {
       id: 'feature',
-      title: 'Gráfico de Recursos (Feature Graphic)',
-      desc: 'Banner de destaque obrigatório na Ficha da Loja (1024x500)',
+      title: 'Feature Graphic (1024x500 in English)',
+      desc: 'Mandatory store listing hero banner in English (1024x500 px PNG)',
       src: '/playstore-feature-graphic-1024x500.png',
       aspect: 'aspect-[1024/500]',
       dims: '1024x500 px'
     },
     {
-      id: 'screen-wide',
-      title: 'Screenshot Panorâmico (Desktop/Tablet)',
-      desc: 'Tabela quantitativa completa com cotações e rankings de Wall Street',
-      src: '/screenshot-wide.png',
-      aspect: 'aspect-[16/9]',
-      dims: '1280x720 px'
-    },
-    {
-      id: 'screen-mobile',
-      title: 'Screenshot Vertical (Mobile)',
-      desc: 'Gráficos técnicos, Fibonacci áureo e indicadores de sobrevenda',
-      src: '/screenshot-mobile.png',
-      aspect: 'aspect-[9/16]',
-      dims: '720x1280 px'
-    },
-    {
       id: 'screen1',
-      title: 'Screenshot 1 - Scanner de Sobrevenda',
-      desc: 'Tela principal com tabela quantitativa e ranking de oportunidades',
+      title: 'Screenshot 1 - Real-Time Oversold Scanner',
+      desc: 'Main terminal screen with quantitative table and opportunity rankings in USD',
       src: '/screenshot-1-scanner.png',
       aspect: 'aspect-[9/16]',
       dims: '1080x1920 px'
     },
     {
       id: 'screen2',
-      title: 'Screenshot 2 - Indicadores Técnicos',
-      desc: 'Gráficos de RSI(14), Estocástico, MACD e Médias Móveis',
+      title: 'Screenshot 2 - Technical Charts & Fibonacci',
+      desc: 'Interactive candlestick charts, EMA 9/21/200, Bollinger Bands and Golden Fibonacci',
       src: '/screenshot-2-indicadores.png',
       aspect: 'aspect-[9/16]',
       dims: '1080x1920 px'
     },
     {
       id: 'screen3',
-      title: 'Screenshot 3 - Modelos IA Preditivos',
-      desc: 'Projeções de retorno, probabilidade e stops automatizados',
+      title: 'Screenshot 3 - Predictive AI & ML Models',
+      desc: '5-Day price forecasts, institutional order flow pressure and autonomous Q-Learning agent',
       src: '/screenshot-3-ia-modelos.png',
       aspect: 'aspect-[9/16]',
       dims: '1080x1920 px'
     },
     {
       id: 'screen4',
-      title: 'Screenshot 4 - Triple Screen & Fibonacci',
-      desc: 'Análise de múltiplos tempos gráficos e zonas áureas de retração',
+      title: 'Screenshot 4 - Triple Screen & Minervini',
+      desc: 'Alexander Elder multi-timeframe strategy and 8-stage Mark Minervini trend template',
       src: '/screenshot-4-triple-screen.png',
       aspect: 'aspect-[9/16]',
       dims: '1080x1920 px'
+    },
+    {
+      id: 'screen-wide',
+      title: 'Panoramic Screenshot (Tablet / Desktop)',
+      desc: 'Complete dual-column quantitative trading terminal (1280x720 px)',
+      src: '/screenshot-wide.png',
+      aspect: 'aspect-[16/9]',
+      dims: '1280x720 px'
+    },
+    {
+      id: 'screen-mobile',
+      title: 'Vertical Mobile Terminal Screenshot',
+      desc: 'Compact mobile dashboard with real-time indicators and trade risk simulator',
+      src: '/screenshot-mobile.png',
+      aspect: 'aspect-[9/16]',
+      dims: '720x1280 px'
     }
   ];
 
@@ -276,6 +276,29 @@ export const PlayStoreKitModal: React.FC<PlayStoreKitModalProps> = ({
                 {copiedKey === 'pkg' ? <Check className="w-3.5 h-3.5 text-emerald-400" /> : <Copy className="w-3.5 h-3.5" />}
                 <span>{copiedKey === 'pkg' ? 'Copiado!' : 'Copiar'}</span>
               </button>
+            </div>
+
+            {/* Version & WebIntoApp Step-by-Step Info */}
+            <div className="bg-gradient-to-r from-blue-950/40 via-slate-850 to-purple-950/40 border border-blue-500/30 rounded-xl p-3.5 space-y-2">
+              <div className="flex items-center justify-between">
+                <span className="text-xs font-bold text-blue-300 uppercase tracking-wider flex items-center gap-1.5">
+                  🚀 Nova Versão WebIntoApp para Produção (Update App)
+                </span>
+                <span className="text-[11px] font-mono bg-blue-500/20 text-blue-300 px-2 py-0.5 rounded border border-blue-500/30 font-bold">
+                  v1.0.1 (Build 2)
+                </span>
+              </div>
+              <p className="text-xs text-slate-300 leading-relaxed">
+                Para atualizar seu app já existente no <strong>WebIntoApp</strong> e enviar o novo <strong>.AAB (Android App Bundle)</strong> ao Google Play Console:
+              </p>
+              <ol className="text-xs text-slate-300 list-decimal list-inside space-y-1 pl-1">
+                <li>No WebIntoApp, abra seu app e clique em <strong>"Edit App"</strong> ou <strong>"Make App"</strong>.</li>
+                <li>Confirme a URL de Produção: <code className="text-emerald-300 font-mono text-[11px]">{appUrl}</code>.</li>
+                <li>Altere o <strong>Version Name</strong> para <strong className="text-white">1.0.1</strong> e incremente o <strong>Version Code</strong> para <strong className="text-white">2</strong> (exigência da Google Play para atualizações).</li>
+                <li>Faça upload do novo <strong>playstore-icon-512.png</strong> caso deseje atualizar o ícone nativo.</li>
+                <li>Clique em <strong>"Generate App"</strong> para baixar o novo <strong>.AAB</strong> assinado.</li>
+                <li>No Google Play Console, vá em <strong>Produção &gt; Criar nova versão</strong> e envie o novo arquivo .aab gerado!</li>
+              </ol>
             </div>
 
             {/* English Play Store Listing Copy */}

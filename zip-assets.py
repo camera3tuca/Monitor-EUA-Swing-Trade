@@ -21,6 +21,7 @@ files_to_zip = [
     'sciencebit-logo-white.svg',
     'sciencebit-logo.png',
     'sciencebit-logo-white.png',
+    'bull-emblem.png',
     'privacy.html',
     'manifest.json'
 ]

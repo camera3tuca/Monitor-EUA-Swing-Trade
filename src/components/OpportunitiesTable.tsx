@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState } from 'react';
 import { AssetOpportunity } from '../types';
 import { ChevronUp, ChevronDown, CheckCircle2, ArrowDownRight, ArrowUpRight, Eye, Filter, X } from 'lucide-react';
 import { getSectorStyle } from '../utils/sectorUtils';
@@ -12,7 +12,6 @@ interface OpportunitiesTableProps {
   selectedSector?: string;
   onSelectSector?: (sector: string) => void;
   availableSectors?: [string, number][];
-  detailContent?: React.ReactNode;
 }
 
 type SortField = 'IS' | 'Queda_Dia' | 'Score' | 'Liquidez' | 'Preco' | 'Fechamento_Anterior' | 'Volume' | 'Ticker' | 'Setor';
@@ -24,38 +23,10 @@ export const OpportunitiesTable: React.FC<OpportunitiesTableProps> = ({
   selectedSector = 'all',
   onSelectSector,
   availableSectors = [],
-  detailContent,
 }) => {
   const { t } = useLanguage();
   const [sortField, setSortField] = useState<SortField>('Queda_Dia');
   const [sortAsc, setSortAsc] = useState<boolean>(true);
-  const detailRef = useRef<HTMLTableRowElement | null>(null);
-  const tableContainerRef = useRef<HTMLDivElement | null>(null);
-  const [containerWidth, setContainerWidth] = useState<number | undefined>(undefined);
-
-  // Keep track of the visible width of the table card
-  useEffect(() => {
-    if (!tableContainerRef.current) return;
-    const updateWidth = () => {
-      if (tableContainerRef.current) {
-        setContainerWidth(tableContainerRef.current.clientWidth);
-      }
-    };
-    updateWidth();
-    const observer = new ResizeObserver(updateWidth);
-    observer.observe(tableContainerRef.current);
-    return () => observer.disconnect();
-  }, []);
-
-  // Auto scroll smoothly to the expanded chart/analysis row
-  useEffect(() => {
-    if (selectedTicker && detailRef.current) {
-      const timer = setTimeout(() => {
-        detailRef.current?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-      }, 100);
-      return () => clearTimeout(timer);
-    }
-  }, [selectedTicker]);
 
   const handleSort = (field: SortField) => {
     if (sortField === field) {
@@ -165,7 +136,7 @@ export const OpportunitiesTable: React.FC<OpportunitiesTableProps> = ({
         )}
       </div>
 
-      <div ref={tableContainerRef} className="overflow-x-auto">
+      <div className="overflow-x-auto">
         <table className="w-full text-left text-xs border-collapse">
           <thead>
             <tr className="bg-slate-900/90 text-slate-400 font-semibold border-b border-slate-700 select-none">
@@ -366,28 +337,6 @@ export const OpportunitiesTable: React.FC<OpportunitiesTableProps> = ({
                       </button>
                     </td>
                   </tr>
-
-                  {/* Inline Expanded Chart & Inspection Detail Section */}
-                  {isSelected && detailContent && (
-                    <tr
-                      key={`${row.Ticker}-expanded-detail`}
-                      ref={detailRef}
-                      id={`row-detail-${row.Ticker.toLowerCase()}`}
-                      className="bg-slate-950/95"
-                    >
-                      <td colSpan={14} className="p-0 border-y-2 border-blue-500/50 bg-slate-950">
-                        <div
-                          className="sticky left-0 overflow-hidden p-2 sm:p-4 max-w-full"
-                          style={{
-                            width: containerWidth ? `${containerWidth}px` : '100%',
-                            maxWidth: '100vw'
-                          }}
-                        >
-                          {detailContent}
-                        </div>
-                      </td>
-                    </tr>
-                  )}
                 </React.Fragment>
               );
             })}

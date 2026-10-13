@@ -1,202 +1,166 @@
-
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
   <defs>
-    <!-- Background Radial Gradient -->
-    <radialGradient id="bgGrad" cx="50%" cy="40%" r="70%">
-      <stop offset="0%" stop-color="#141f3d"/>
-      <stop offset="45%" stop-color="#0b1226"/>
-      <stop offset="100%" stop-color="#050813"/>
-    </radialGradient>
-
-    <!-- Metallic Gold Bull Gradient -->
-    <linearGradient id="goldBull" x1="0%" y1="100%" x2="100%" y2="0%">
-      <stop offset="0%" stop-color="#d97706"/>
-      <stop offset="35%" stop-color="#f59e0b"/>
-      <stop offset="70%" stop-color="#fbbf24"/>
-      <stop offset="100%" stop-color="#fef08a"/>
-    </linearGradient>
-
-    <!-- Electric Cyan to Emerald Trajectory -->
-    <linearGradient id="trendGlow" x1="0%" y1="100%" x2="100%" y2="0%">
-      <stop offset="0%" stop-color="#3b82f6"/>
-      <stop offset="50%" stop-color="#06b6d4"/>
-      <stop offset="100%" stop-color="#10b981"/>
-    </linearGradient>
-
-    <!-- Bull Horns Glow -->
-    <linearGradient id="hornGrad" x1="0%" y1="100%" x2="100%" y2="0%">
-      <stop offset="0%" stop-color="#f59e0b"/>
-      <stop offset="100%" stop-color="#ffffff"/>
-    </linearGradient>
-
-    <!-- Candlestick Gradients -->
-    <linearGradient id="candleBull" x1="0%" y1="0%" x2="0%" y2="100%">
-      <stop offset="0%" stop-color="#34d399"/>
-      <stop offset="100%" stop-color="#059669"/>
-    </linearGradient>
-    <linearGradient id="candleBear" x1="0%" y1="0%" x2="0%" y2="100%">
-      <stop offset="0%" stop-color="#fb7185"/>
-      <stop offset="100%" stop-color="#e11d48"/>
-    </linearGradient>
-
-    <!-- Ambient Glow Filter -->
-    <filter id="glow" x="-20%" y="-20%" width="140%" height="140%">
-      <feGaussianBlur stdDeviation="10" result="blur"/>
-      <feComposite in="SourceGraphic" in2="blur" operator="over"/>
-    </filter>
-    <filter id="radarBloom" x="-30%" y="-30%" width="160%" height="160%">
-      <feGaussianBlur stdDeviation="6" result="blur"/>
-    </filter>
+    <!-- Filter for crisp shapes -->
+    <clipPath id="squircleClip">
+      <rect x="0" y="0" width="512" height="512" rx="115"/>
+    </clipPath>
   </defs>
 
-  <!-- 1. Background Container -->
-  <rect width="512" height="512" rx="108" fill="url(#bgGrad)"/>
+  <!-- 1. Pure White Background Squircle -->
+  <rect width="512" height="512" rx="115" fill="#ffffff"/>
 
-  <!-- Inner Bezel Ring -->
-  <rect width="504" height="504" x="4" y="4" rx="104" fill="none" stroke="#1e293b" stroke-width="4"/>
-  <rect width="496" height="496" x="8" y="8" rx="100" fill="none" stroke="#2563eb" stroke-width="1.5" stroke-opacity="0.4"/>
+  <!-- 2. Candlestick Bars in the background -->
+  <g id="candlesticks">
+    <!-- Candle 1: Far Left Green (x: 68) -->
+    <line x1="72" y1="240" x2="72" y2="410" stroke="#00b050" stroke-width="4.5" stroke-linecap="round"/>
+    <rect x="54" y="270" width="36" height="110" rx="3" fill="#00b050"/>
 
-  <!-- Ambient Light Orbs -->
-  <circle cx="256" cy="220" r="160" fill="#2563eb" opacity="0.12" filter="url(#glow)"/>
-  <circle cx="380" cy="140" r="100" fill="#10b981" opacity="0.1" filter="url(#glow)"/>
-  <circle cx="120" cy="360" r="110" fill="#e11d48" opacity="0.08" filter="url(#glow)"/>
+    <!-- Candle 2: Green (x: 112) -->
+    <line x1="112" y1="142" x2="112" y2="340" stroke="#00b050" stroke-width="4.5" stroke-linecap="round"/>
+    <rect x="94" y="172" width="36" height="168" rx="3" fill="#00b050"/>
 
-  <!-- 2. SCANNER RADAR SCOPE (Represents the "Scanner" function) -->
-  <g transform="translate(256, 250)" opacity="0.28">
-    <!-- Concentric radar range rings -->
-    <circle r="75" fill="none" stroke="#38bdf8" stroke-width="1.5" stroke-dasharray="6,4"/>
-    <circle r="135" fill="none" stroke="#38bdf8" stroke-width="1.5" stroke-dasharray="8,6"/>
-    <circle r="195" fill="none" stroke="#38bdf8" stroke-width="1.2" stroke-dasharray="4,4"/>
+    <!-- Candle 3: Red (x: 152) -->
+    <line x1="152" y1="154" x2="152" y2="396" stroke="#ef4444" stroke-width="4.5" stroke-linecap="round"/>
+    <rect x="134" y="182" width="36" height="48" rx="3" fill="#ef4444"/>
 
-    <!-- Radar Crosshairs & Axis Reticle -->
-    <line x1="-205" y1="0" x2="205" y2="0" stroke="#38bdf8" stroke-width="1.2" stroke-dasharray="4,4"/>
-    <line x1="0" y1="-205" x2="0" y2="205" stroke="#38bdf8" stroke-width="1.2" stroke-dasharray="4,4"/>
+    <!-- Candle 4: Green (x: 188) -->
+    <line x1="188" y1="144" x2="188" y2="415" stroke="#00b050" stroke-width="4.5" stroke-linecap="round"/>
+    <rect x="170" y="172" width="36" height="60" rx="3" fill="#00b050"/>
 
-    <!-- Reticle Ticks -->
-    <circle cx="0" cy="0" r="3" fill="#38bdf8"/>
-    <circle cx="0" cy="-135" r="3" fill="#38bdf8"/>
-    <circle cx="0" cy="135" r="3" fill="#38bdf8"/>
-    <circle cx="-135" cy="0" r="3" fill="#38bdf8"/>
-    <circle cx="135" cy="0" r="3" fill="#38bdf8"/>
+    <!-- Candle 5: Green (x: 222) -->
+    <line x1="222" y1="126" x2="222" y2="375" stroke="#00b050" stroke-width="4.5" stroke-linecap="round"/>
+    <rect x="204" y="154" width="36" height="55" rx="3" fill="#00b050"/>
 
-    <!-- Radar Target Ping in Top-Right Quadrant (Target Found!) -->
-    <circle cx="100" cy="-95" r="14" fill="#10b981" fill-opacity="0.25" stroke="#34d399" stroke-width="2"/>
-    <circle cx="100" cy="-95" r="4" fill="#34d399"/>
+    <!-- Candle 6: Red (x: 258) -->
+    <line x1="258" y1="88" x2="258" y2="200" stroke="#ef4444" stroke-width="4.5" stroke-linecap="round"/>
+    <rect x="240" y="115" width="36" height="78" rx="3" fill="#ef4444"/>
+
+    <!-- Candle 7: Green (x: 294) -->
+    <line x1="294" y1="128" x2="294" y2="418" stroke="#00b050" stroke-width="4.5" stroke-linecap="round"/>
+    <rect x="276" y="154" width="36" height="48" rx="3" fill="#00b050"/>
+
+    <!-- Candle 8: Red - Tall Center (x: 330) -->
+    <line x1="330" y1="68" x2="330" y2="375" stroke="#ef4444" stroke-width="4.5" stroke-linecap="round"/>
+    <rect x="312" y="98" width="36" height="78" rx="3" fill="#ef4444"/>
+
+    <!-- Candle 9: Green (x: 368) -->
+    <line x1="368" y1="98" x2="368" y2="370" stroke="#00b050" stroke-width="4.5" stroke-linecap="round"/>
+    <rect x="350" y="130" width="36" height="65" rx="3" fill="#00b050"/>
+
+    <!-- Candle 10: Red (x: 406) -->
+    <line x1="406" y1="130" x2="406" y2="375" stroke="#ef4444" stroke-width="4.5" stroke-linecap="round"/>
+    <rect x="388" y="160" width="36" height="66" rx="3" fill="#ef4444"/>
+
+    <!-- Candle 11: Far Right Green (x: 448) -->
+    <line x1="448" y1="88" x2="448" y2="340" stroke="#00b050" stroke-width="4.5" stroke-linecap="round"/>
+    <rect x="430" y="120" width="36" height="114" rx="3" fill="#00b050"/>
   </g>
 
-  <!-- 3. DYNAMIC CANDLESTICK PILLARS (Ascending Swing Trade Setup) -->
-  <g transform="translate(0, 50)">
-    <!-- Candle 1: Drop (Far Left) -->
-    <line x1="86" y1="260" x2="86" y2="385" stroke="#f43f5e" stroke-width="3" opacity="0.6"/>
-    <rect x="74" y="280" width="24" height="75" rx="3" fill="url(#candleBear)" opacity="0.85"/>
+  <!-- 3. Charging Bull Silhouette with Crisp White Contour -->
+  <g id="bull">
+    <!-- Path 1: White outer contour halo / stroke (thickness 14px) for perfect separation -->
+    <path
+      d="
+        M 22,246
+        C 32,225 50,215 75,212
+        C 105,210 135,232 150,235
+        C 175,240 195,228 220,210
+        C 248,190 280,172 318,172
+        C 345,172 375,188 395,212
+        C 402,220 415,224 425,224
+        C 442,224 465,230 488,238
+        C 470,248 445,252 432,246
+        C 445,258 468,272 478,286
+        C 460,286 442,276 428,266
+        C 424,272 416,290 410,314
+        C 405,326 394,330 382,324
+        C 374,318 365,302 355,294
+        C 345,286 332,286 318,296
+        C 334,312 352,338 372,364
+        C 388,382 402,402 424,416
+        L 412,422
+        C 396,416 384,396 368,374
+        C 350,350 338,328 325,322
+        C 318,338 305,358 292,374
+        C 284,386 274,394 260,392
+        L 255,385
+        C 268,368 280,350 286,334
+        C 268,342 244,350 220,344
+        C 198,338 185,325 174,312
+        C 170,332 165,355 160,378
+        L 172,394
+        L 155,394
+        C 146,374 142,348 138,322
+        C 128,336 118,362 108,388
+        L 120,395
+        L 102,395
+        C 92,370 96,334 106,298
+        C 112,274 108,256 88,252
+        C 68,248 45,248 28,255
+        Z
+      "
+      fill="#ffffff"
+      stroke="#ffffff"
+      stroke-width="12"
+      stroke-linejoin="round"
+      stroke-linecap="round"
+    />
 
-    <!-- Candle 2: Deep Oversold Drop -->
-    <line x1="146" y1="290" x2="146" y2="425" stroke="#f43f5e" stroke-width="3.5"/>
-    <rect x="134" y="315" width="24" height="85" rx="3" fill="url(#candleBear)"/>
+    <!-- Path 2: Solid Jet Black Bull Body -->
+    <path
+      d="
+        M 22,246
+        C 32,225 50,215 75,212
+        C 105,210 135,232 150,235
+        C 175,240 195,228 220,210
+        C 248,190 280,172 318,172
+        C 345,172 375,188 395,212
+        C 402,220 415,224 425,224
+        C 442,224 465,230 488,238
+        C 470,248 445,252 432,246
+        C 445,258 468,272 478,286
+        C 460,286 442,276 428,266
+        C 424,272 416,290 410,314
+        C 405,326 394,330 382,324
+        C 374,318 365,302 355,294
+        C 345,286 332,286 318,296
+        C 334,312 352,338 372,364
+        C 388,382 402,402 424,416
+        L 412,422
+        C 396,416 384,396 368,374
+        C 350,350 338,328 325,322
+        C 318,338 305,358 292,374
+        C 284,386 274,394 260,392
+        L 255,385
+        C 268,368 280,350 286,334
+        C 268,342 244,350 220,344
+        C 198,338 185,325 174,312
+        C 170,332 165,355 160,378
+        L 172,394
+        L 155,394
+        C 146,374 142,348 138,322
+        C 128,336 118,362 108,388
+        L 120,395
+        L 102,395
+        C 92,370 96,334 106,298
+        C 112,274 108,256 88,252
+        C 68,248 45,248 28,255
+        Z
+      "
+      fill="#0c1017"
+    />
 
-    <!-- Candle 3: Reversal Hammer / Pinbar (The Turnaround Signal) -->
-    <line x1="210" y1="310" x2="210" y2="445" stroke="#38bdf8" stroke-width="4"/>
-    <rect x="198" y="315" width="24" height="40" rx="3" fill="#38bdf8"/>
-    <!-- Glowing Hammer Pivot Dot -->
-    <circle cx="210" cy="445" r="4" fill="#38bdf8" filter="url(#glow)"/>
+    <!-- Bull Eye Detail (White Slit Crescent) -->
+    <path
+      d="M 386,262 C 392,266 398,272 400,277 C 394,276 388,270 384,264 Z"
+      fill="#ffffff"
+    />
 
-    <!-- Candle 4: Bullish Breakout Candle -->
-    <line x1="290" y1="220" x2="290" y2="370" stroke="#10b981" stroke-width="3.5"/>
-    <rect x="278" y="245" width="24" height="95" rx="3" fill="url(#candleBull)"/>
-
-    <!-- Candle 5: Powerful Expansion Candle -->
-    <line x1="365" y1="150" x2="365" y2="300" stroke="#10b981" stroke-width="4"/>
-    <rect x="353" y="170" width="24" height="105" rx="3" fill="url(#candleBull)"/>
-
-    <!-- Candle 6: Massive Gap-Up Bull Candle (Far Right) -->
-    <line x1="435" y1="95" x2="435" y2="235" stroke="#34d399" stroke-width="3.5" opacity="0.75"/>
-    <rect x="423" y="110" width="24" height="100" rx="3" fill="url(#candleBull)" opacity="0.9"/>
-  </g>
-
-  <!-- 4. CHARGING WALL STREET BULL SILHOUETTE (Iconic Centerpiece) -->
-  <!-- A sleek, powerful geometric charging bull leaping up and to the right -->
-  <g transform="translate(145, 125)">
-    <!-- Bull Body Shadow / Glow Silhouette for Depth -->
-    <path d="M 45,135 C 30,115 40,85 70,75 C 95,65 125,55 155,50 C 180,45 205,30 220,10 C 223,5 228,8 226,14 C 220,32 225,48 245,55 C 255,58 260,65 252,72 C 238,82 225,95 215,115 C 205,135 185,150 160,155 C 130,160 100,165 75,175 C 60,180 50,160 45,135 Z"
-          fill="#000000" opacity="0.4" transform="translate(4, 6)"/>
-
-    <!-- Main Metallic Golden Bull Charging Body -->
-    <path d="
-      M 45,135
-      C 30,115 40,85 70,75
-      C 95,65 125,55 155,50
-      C 180,45 205,30 220,10
-      C 223,5 228,8 226,14
-      C 220,32 225,48 245,55
-      C 255,58 260,65 252,72
-      C 238,82 225,95 215,115
-      C 205,135 185,150 160,155
-      C 130,160 100,165 75,175
-      C 60,180 50,160 45,135 Z"
-      fill="url(#goldBull)"/>
-
-    <!-- Sharp Charging Horn (Curving Forward & Upward) -->
-    <path d="
-      M 215,28
-      C 225,12 242,-2 260,-12
-      C 263,-14 265,-10 263,-8
-      C 252,7 242,25 235,42
-      Z"
-      fill="url(#hornGrad)" filter="url(#glow)"/>
-
-    <!-- Secondary Left Horn (Perspective) -->
-    <path d="
-      M 200,32
-      C 208,20 222,8 238,0
-      C 240,-1 241,1 239,3
-      C 232,15 224,28 218,40
-      Z"
-      fill="#d97706" opacity="0.8"/>
-
-    <!-- Bull Head & Snout Geometry -->
-    <polygon points="220,42 248,58 238,78 215,68" fill="#fef08a" opacity="0.6"/>
-    <!-- Bull Eye (Glowing Emerald / Determined) -->
-    <circle cx="218" cy="52" r="3.5" fill="#10b981"/>
-    <circle cx="218" cy="52" r="1.5" fill="#ffffff"/>
-
-    <!-- Powerful Muscular Shoulder / Flank Highlights -->
-    <path d="M 145,58 C 175,65 195,90 190,125 C 170,120 155,100 145,75 Z" fill="#ffffff" opacity="0.22"/>
-    <path d="M 75,80 C 105,75 130,85 140,115 C 115,115 90,105 75,80 Z" fill="#fef08a" opacity="0.28"/>
-
-    <!-- Raised Bull Tail (Charging Momentum) -->
-    <path d="M 48,135 C 35,140 20,135 12,120 C 10,116 14,114 16,117 C 24,128 35,130 46,128 Z" fill="url(#goldBull)"/>
-  </g>
-
-  <!-- 5. EXPONENTIAL SWING MOMENTUM TRAJECTORY BEAM -->
-  <!-- Sweeps under the oversold dip and launches past the bull's horns -->
-  <path d="M 80,390 Q 205,480 340,240 T 455,90"
-        fill="none" stroke="url(#trendGlow)" stroke-width="10" stroke-linecap="round"/>
-  <!-- Glowing Trail Duplicate -->
-  <path d="M 80,390 Q 205,480 340,240 T 455,90"
-        fill="none" stroke="#34d399" stroke-width="3" stroke-linecap="round" opacity="0.8"/>
-
-  <!-- Explosive Trajectory Arrowhead -->
-  <polygon points="475,70 435,88 454,116" fill="#10b981" filter="url(#glow)"/>
-  <polygon points="470,74 440,90 452,110" fill="#ffffff" opacity="0.85"/>
-
-  <!-- 6. TOP BRAND CREST: "WALL ST" -->
-  <g transform="translate(42, 42)">
-    <!-- Pill Container with Blue/Navy Depth -->
-    <rect width="168" height="42" rx="14" fill="#0b1329" stroke="#3b82f6" stroke-width="1.8" opacity="0.95"/>
-    <!-- Glowing Accent Bar -->
-    <rect x="12" y="11" width="6" height="20" rx="3" fill="#38bdf8"/>
-    <!-- Bold Typography -->
-    <text x="28" y="27" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="16" font-weight="900" fill="#ffffff" letter-spacing="2">WALL ST</text>
-    <!-- US Flag Mini Accent (Stars/Stripes hint) -->
-    <circle cx="145" cy="21" r="5" fill="#f43f5e"/>
-    <circle cx="145" cy="21" r="2.5" fill="#ffffff"/>
-  </g>
-
-  <!-- 7. BOTTOM RIGHT "PRO SCANNER" PILL -->
-  <g transform="translate(295, 428)">
-    <rect width="175" height="38" rx="12" fill="#0b1329" stroke="#10b981" stroke-width="1.6" opacity="0.95"/>
-    <circle cx="20" cy="19" r="4" fill="#34d399" filter="url(#glow)"/>
-    <text x="32" y="24" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="12" font-weight="900" fill="#34d399" letter-spacing="1.5">SCANNER PRO</text>
-    <text x="150" y="24" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="13" font-weight="900" fill="#fbbf24">★</text>
+    <!-- Inner Horn White Arch -->
+    <path
+      d="M 436,236 C 454,236 470,240 482,244 C 468,248 450,248 438,244 Z"
+      fill="#ffffff"
+      opacity="0.85"
+    />
   </g>
 </svg>

@@ -1,7 +1,8 @@
 {
-  "name": "Wall Street Scanner - Swing Trade Pro",
+  "name": "Wall Street Scanner Pro",
   "short_name": "Wall Street Scanner",
-  "description": "Scanner de sobrevenda em tempo real e análise quantitativa nas bolsas americanas (S&P 500, Nasdaq, NYSE, ETFs em US$) por ScienceBit (sciencebit.com.br)",
+  "version": "1.0.1",
+  "description": "Real-time quantitative swing trade scanner and technical screening terminal for US equity markets (S&P 500, Nasdaq, NYSE, ETFs) by ScienceBit Computer (sciencebit.com.br)",
   "start_url": "/",
   "scope": "/",
   "id": "com.wallstreetscanner.swingtrade",

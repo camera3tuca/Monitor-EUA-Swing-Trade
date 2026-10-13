@@ -1,6 +1,22 @@
 import React, { useState, useMemo, useRef } from 'react';
 import { HistoricalCandle, FibonacciLevels } from '../types';
-import { Layers, ZoomIn, ZoomOut, BarChart2, TrendingUp, Maximize2 } from 'lucide-react';
+import {
+  Layers,
+  ZoomIn,
+  ZoomOut,
+  BarChart2,
+  TrendingUp,
+  Maximize2,
+  ShieldAlert,
+  AlertTriangle,
+  CheckCircle2,
+  HelpCircle,
+  ChevronDown,
+  ChevronUp,
+  Zap,
+  Info,
+  Flame
+} from 'lucide-react';
 
 interface TechnicalChartProps {
   candles: HistoricalCandle[];
@@ -8,6 +24,7 @@ interface TechnicalChartProps {
   ticker: string;
   timeframe: string;
   onChangeTimeframe: (tf: string) => void;
+  currency?: string;
 }
 
 export const TechnicalChart: React.FC<TechnicalChartProps> = ({
@@ -16,14 +33,17 @@ export const TechnicalChart: React.FC<TechnicalChartProps> = ({
   ticker,
   timeframe,
   onChangeTimeframe,
+  currency = 'USD',
 }) => {
-  const [chartMode, setChartMode] = useState<'candle' | 'line'>('line');
-  const [rangeFilter, setRangeFilter] = useState<'all' | '6m' | '3m' | '1m' | '15d'>('6m');
+  const [chartMode, setChartMode] = useState<'candle' | 'line'>('candle');
+  const [rangeFilter, setRangeFilter] = useState<'all' | '6m' | '3m' | '1m' | '15d'>('3m');
   const [showEMA20, setShowEMA20] = useState(true);
   const [showEMA50, setShowEMA50] = useState(true);
   const [showEMA200, setShowEMA200] = useState(true);
   const [showBollinger, setShowBollinger] = useState(true);
   const [showFibonacci, setShowFibonacci] = useState(true);
+  const [showConfirmationMarkers, setShowConfirmationMarkers] = useState(true);
+  const [showVisualGuide, setShowVisualGuide] = useState(false);
   const [hoverIndex, setHoverIndex] = useState<number | null>(null);
 
   // Filter candles based on range
@@ -92,14 +112,242 @@ export const TechnicalChart: React.FC<TechnicalChartProps> = ({
     return isNaN(val) || !isFinite(val) ? padding.top + chartH / 2 : val;
   };
 
-  const activeCandle = hoverIndex !== null && visibleCandles[hoverIndex]
-    ? visibleCandles[hoverIndex]
-    : visibleCandles.length > 0
-    ? visibleCandles[visibleCandles.length - 1]
+  // Helper currency formatter
+  const formatVal = (val: number | undefined | null) => {
+    if (val === undefined || val === null || isNaN(val)) return '-';
+    const sym = currency === 'BRL' ? 'R$' : '$';
+    return `${sym} ${val.toFixed(2)}`;
+  };
+
+  // Candlestick Pattern & Confirmation Analysis
+  const candleAnalysis = useMemo(() => {
+    if (!visibleCandles || visibleCandles.length === 0) {
+      return {
+        latestStatus: 'WAITING' as const,
+        title: 'Espere o Candlestick de Confirmação',
+        message: 'Nunca compre uma faca caindo sem reação. Procure por candles com sombras inferiores longas (martelo, pinbar) ou fechamentos positivos testando o suporte.',
+        badge: 'bg-amber-500/20 text-amber-300 border-amber-500/30',
+        annotatedCandles: []
+      };
+    }
+
+    const annotated = visibleCandles.map((c, idx) => {
+      const open = typeof c.open === 'number' && !isNaN(c.open) ? c.open : (c.close || 0);
+      const close = typeof c.close === 'number' && !isNaN(c.close) ? c.close : open;
+      const high = typeof c.high === 'number' && !isNaN(c.high) ? c.high : Math.max(open, close);
+      const low = typeof c.low === 'number' && !isNaN(c.low) ? c.low : Math.min(open, close);
+      const range = Math.max(0.001, high - low);
+      const body = Math.abs(close - open);
+      const isUp = close >= open;
+      const upperShadow = Math.max(0, high - Math.max(open, close));
+      const lowerShadow = Math.max(0, Math.min(open, close) - low);
+
+      const lowerShadowPercent = range > 0 ? (lowerShadow / range) * 100 : 0;
+      const upperShadowPercent = range > 0 ? (upperShadow / range) * 100 : 0;
+      const bodyPercent = range > 0 ? (body / range) * 100 : 0;
+
+      // Suporte: Proximidade a Fibonacci (61.8%, 50%, 38.2%) ou EMA 200
+      const nearFib618 = fibonacci?.fib618 ? Math.abs(low - fibonacci.fib618) / fibonacci.fib618 < 0.03 : false;
+      const nearFib500 = fibonacci?.fib500 ? Math.abs(low - fibonacci.fib500) / fibonacci.fib500 < 0.03 : false;
+      const nearFib382 = fibonacci?.fib382 ? Math.abs(low - fibonacci.fib382) / fibonacci.fib382 < 0.03 : false;
+      const nearEMA200 = c.ema200 ? Math.abs(low - c.ema200) / c.ema200 < 0.03 : false;
+      const nearSupport = nearFib618 || nearFib500 || nearFib382 || nearEMA200;
+      const supportName = nearFib618 ? 'Fibo 61.8%' : nearFib500 ? 'Fibo 50%' : nearFib382 ? 'Fibo 38.2%' : nearEMA200 ? 'EMA 200' : null;
+
+      // 1. Hammer / Pinbar (Sombra inferior longa >= 40% da amplitude e >= 1.5x o corpo)
+      const isHammer = range > 0 && lowerShadow >= Math.max(0.01, body * 1.5) && lowerShadow >= range * 0.40 && upperShadow <= range * 0.30;
+
+      // 2. Faca Caindo (Forte baixa fechando na mínima sem sombra inferior: corpo >= 60% e sombra inferior <= 15%)
+      const isFallingKnife = range > 0 && !isUp && body >= range * 0.60 && lowerShadow <= range * 0.15;
+
+      // 3. Fechamento Positivo no Suporte (Candle de alta confirmando reação compradora)
+      const prev = idx > 0 ? visibleCandles[idx - 1] : null;
+      const prevClose = prev ? (prev.close || prev.open) : open;
+      const isPositiveReaction = isUp && close > prevClose && body >= range * 0.30 && lowerShadow > 0;
+
+      return {
+        ...c,
+        open,
+        close,
+        high,
+        low,
+        range,
+        body,
+        isUp,
+        upperShadow,
+        lowerShadow,
+        lowerShadowPercent,
+        upperShadowPercent,
+        bodyPercent,
+        nearSupport,
+        supportName,
+        isHammer,
+        isFallingKnife,
+        isPositiveReaction
+      };
+    });
+
+    // Check latest candles
+    const last = annotated[annotated.length - 1];
+    const prev = annotated.length > 1 ? annotated[annotated.length - 2] : null;
+
+    let latestStatus: 'CONFIRMED' | 'FALLING_KNIFE' | 'WAITING' = 'WAITING';
+    let title = 'Espere o Candlestick de Confirmação';
+    let message = 'Nunca compre uma faca caindo sem reação. Procure por candles com sombras inferiores longas (martelo, pinbar) ou fechamentos positivos testando o suporte.';
+    let badge = 'bg-amber-500/20 text-amber-300 border-amber-500/30';
+
+    if (last?.isHammer || (prev && prev.isHammer)) {
+      latestStatus = 'CONFIRMED';
+      title = 'Gatilho Detectado: Martelo / Pinbar no Suporte!';
+      message = 'Forte sombra inferior identificada (rejeição de mínimas). Os compradores defenderam o suporte. O gatilho de entrada ocorre no rompimento da máxima do candle.';
+      badge = 'bg-emerald-500/20 text-emerald-300 border-emerald-500/30';
+    } else if (last?.isPositiveReaction) {
+      latestStatus = 'CONFIRMED';
+      title = 'Confirmação Detectada: Fechamento Positivo no Suporte!';
+      message = 'Candle de alta confirmando a reação compradora após testar níveis de suporte/Fibonacci. Estrutura pronta para swing trade.';
+      badge = 'bg-emerald-500/20 text-emerald-300 border-emerald-500/30';
+    } else if (last?.isFallingKnife) {
+      latestStatus = 'FALLING_KNIFE';
+      title = 'Alerta de Risco: Faca Caindo sem Reação!';
+      message = 'Candle de forte baixa fechando na mínima sem sombra inferior. Não compre antes do candle fechar e mostrar reação com sombra inferior ou alta!';
+      badge = 'bg-rose-500/20 text-rose-300 border-rose-500/30';
+    }
+
+    return {
+      latestStatus,
+      title,
+      message,
+      badge,
+      annotatedCandles: annotated
+    };
+  }, [visibleCandles, fibonacci]);
+
+  const activeCandle = hoverIndex !== null && candleAnalysis.annotatedCandles[hoverIndex]
+    ? candleAnalysis.annotatedCandles[hoverIndex]
+    : candleAnalysis.annotatedCandles.length > 0
+    ? candleAnalysis.annotatedCandles[candleAnalysis.annotatedCandles.length - 1]
     : null;
 
   return (
     <div className="bg-slate-900/90 border border-slate-700/80 rounded-2xl p-4 lg:p-5 shadow-2xl">
+      {/* Alerta Estratégico: Espere o Candlestick de Confirmação */}
+      <div className="mb-4 bg-gradient-to-r from-amber-950/40 via-slate-900/90 to-emerald-950/30 border border-amber-500/40 rounded-2xl p-4 shadow-xl">
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-3.5">
+          <div className="flex items-start gap-3">
+            <div className={`p-2.5 rounded-xl border shrink-0 mt-0.5 ${
+              candleAnalysis.latestStatus === 'CONFIRMED'
+                ? 'bg-emerald-500/10 border-emerald-500/30 text-emerald-400'
+                : candleAnalysis.latestStatus === 'FALLING_KNIFE'
+                ? 'bg-rose-500/10 border-rose-500/30 text-rose-400'
+                : 'bg-amber-500/10 border-amber-500/30 text-amber-400'
+            }`}>
+              {candleAnalysis.latestStatus === 'CONFIRMED' ? (
+                <CheckCircle2 className="w-5 h-5" />
+              ) : candleAnalysis.latestStatus === 'FALLING_KNIFE' ? (
+                <AlertTriangle className="w-5 h-5" />
+              ) : (
+                <ShieldAlert className="w-5 h-5" />
+              )}
+            </div>
+
+            <div className="space-y-1">
+              <div className="flex items-center gap-2 flex-wrap">
+                <h3 className="font-extrabold text-sm md:text-base text-amber-300 tracking-tight flex items-center gap-1.5">
+                  <span>⚠️ Espere o Candlestick de Confirmação</span>
+                </h3>
+                <span className={`text-[11px] font-mono font-bold px-2.5 py-0.5 rounded-full border ${candleAnalysis.badge}`}>
+                  {candleAnalysis.title}
+                </span>
+              </div>
+              <p className="text-xs text-slate-300 leading-relaxed font-medium">
+                <strong className="text-amber-200">Regra de Ouro:</strong> Nunca compre uma faca caindo sem reação. Procure por candles com sombras inferiores longas (martelo, pinbar) ou fechamentos positivos testando o suporte.
+              </p>
+              <p className="text-[11px] text-slate-400 leading-relaxed">
+                {candleAnalysis.message}
+              </p>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-2 shrink-0 self-end md:self-center">
+            <button
+              type="button"
+              onClick={() => setShowConfirmationMarkers(!showConfirmationMarkers)}
+              className={`px-3 py-1.5 rounded-lg border text-xs font-semibold transition cursor-pointer flex items-center gap-1.5 ${
+                showConfirmationMarkers
+                  ? 'bg-blue-600/30 border-blue-400 text-blue-200'
+                  : 'bg-slate-800 border-slate-700 text-slate-400 hover:text-white'
+              }`}
+              title="Mostrar marcadores de martelo e faca caindo diretamente nos candles"
+            >
+              <Zap className="w-3.5 h-3.5 text-amber-400" />
+              <span>Marcadores no Gráfico</span>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => setShowVisualGuide(!showVisualGuide)}
+              className="px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-750 border border-slate-700 text-xs font-semibold text-slate-300 hover:text-white transition cursor-pointer flex items-center gap-1.5"
+            >
+              <HelpCircle className="w-3.5 h-3.5 text-cyan-400" />
+              <span>Guia Visual</span>
+              {showVisualGuide ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
+            </button>
+          </div>
+        </div>
+
+        {/* Guia Didático Visual Expansível */}
+        {showVisualGuide && (
+          <div className="mt-3.5 pt-3 border-t border-slate-800/80 grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs">
+            {/* Modelo 1: Martelo / Pinbar */}
+            <div className="bg-slate-950/60 border border-emerald-500/30 rounded-xl p-3 flex items-start gap-3">
+              <div className="w-8 h-12 bg-slate-900 border border-slate-700 rounded flex flex-col items-center justify-between py-1 shrink-0">
+                <div className="w-4 h-3 bg-emerald-500 rounded-sm"></div>
+                <div className="w-0.5 h-6 bg-emerald-400"></div>
+              </div>
+              <div>
+                <strong className="text-emerald-300 font-bold block text-[13px]">1. Martelo / Pinbar</strong>
+                <p className="text-slate-400 text-[11px] mt-0.5 leading-snug">
+                  Pavio inferior longo (2x a 3x o corpo). Vendedores tentaram afundar o preço, mas compradores defenderam o suporte.
+                </p>
+                <span className="text-[10px] text-emerald-400 font-mono font-bold mt-1 inline-block">✓ COMPRA NO ROMPIMENTO</span>
+              </div>
+            </div>
+
+            {/* Modelo 2: Fechamento Positivo */}
+            <div className="bg-slate-950/60 border border-blue-500/30 rounded-xl p-3 flex items-start gap-3">
+              <div className="w-8 h-12 bg-slate-900 border border-slate-700 rounded flex flex-col items-center justify-between py-1 shrink-0">
+                <div className="w-0.5 h-1.5 bg-blue-400"></div>
+                <div className="w-4 h-6 bg-blue-500 rounded-sm"></div>
+                <div className="w-0.5 h-1.5 bg-blue-400"></div>
+              </div>
+              <div>
+                <strong className="text-blue-300 font-bold block text-[13px]">2. Fechamento Positivo</strong>
+                <p className="text-slate-400 text-[11px] mt-0.5 leading-snug">
+                  Corpo verde fechando acima da abertura após testar suporte (Fibo 50% ou 61.8%). Confirma que o fundo segurou.
+                </p>
+                <span className="text-[10px] text-blue-400 font-mono font-bold mt-1 inline-block">✓ CONFIRMAÇÃO DE FUNDO</span>
+              </div>
+            </div>
+
+            {/* Modelo 3: Faca Caindo (Evite) */}
+            <div className="bg-slate-950/60 border border-rose-500/30 rounded-xl p-3 flex items-start gap-3">
+              <div className="w-8 h-12 bg-slate-900 border border-slate-700 rounded flex flex-col items-center justify-between py-1 shrink-0">
+                <div className="w-0.5 h-1.5 bg-rose-400"></div>
+                <div className="w-4 h-8 bg-rose-500 rounded-sm"></div>
+                <div className="w-0.5 h-0.5 bg-rose-400"></div>
+              </div>
+              <div>
+                <strong className="text-rose-300 font-bold block text-[13px]">3. Faca Caindo (EVITE!)</strong>
+                <p className="text-slate-400 text-[11px] mt-0.5 leading-snug">
+                  Barra vermelha cheia fechando na mínima sem pavio inferior. Pressão vendedora ainda total. Não tente adivinhar o fundo!
+                </p>
+                <span className="text-[10px] text-rose-400 font-mono font-bold mt-1 inline-block">✗ NÃO COMPRE SEM REAÇÃO</span>
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
+
       {/* Chart Controls Bar */}
       <div className="flex flex-wrap items-center justify-between gap-3 mb-4 pb-3 border-b border-slate-800">
         {/* Timeframe & Mode */}
@@ -199,16 +447,84 @@ export const TechnicalChart: React.FC<TechnicalChartProps> = ({
         </div>
       </div>
 
-      {/* Info Bar with Active Hover Data */}
+      {/* Info Bar with Candlestick Confirmation Diagnostic & Active Hover Data */}
       {activeCandle && (
-        <div className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-7 gap-2 bg-slate-800/80 p-2.5 rounded-xl border border-slate-700/60 mb-3 text-xs font-mono">
-          <div><span className="text-slate-400">Data:</span> <strong className="text-white">{activeCandle.date}</strong></div>
-          <div><span className="text-slate-400">Abertura:</span> <strong className="text-slate-200">R$ {activeCandle.open?.toFixed(2)}</strong></div>
-          <div><span className="text-slate-400">Máx:</span> <strong className="text-emerald-400">R$ {activeCandle.high?.toFixed(2)}</strong></div>
-          <div><span className="text-slate-400">Mín:</span> <strong className="text-rose-400">R$ {activeCandle.low?.toFixed(2)}</strong></div>
-          <div><span className="text-slate-400">Fechamento:</span> <strong className="text-white font-bold">R$ {activeCandle.close?.toFixed(2)}</strong></div>
-          <div><span className="text-slate-400">RSI:</span> <strong className={`${(activeCandle.rsi14 || 50) < 30 ? 'text-emerald-400 font-bold' : 'text-slate-300'}`}>{activeCandle.rsi14?.toFixed(1) || '-'}</strong></div>
-          <div><span className="text-slate-400">Vol:</span> <strong className="text-cyan-400">{((activeCandle.volume || 0) / 1e6).toFixed(1)}M</strong></div>
+        <div className="mb-3 space-y-2">
+          {/* Diagnostic Card for Active / Hovered Candle */}
+          <div className={`p-2.5 rounded-xl border flex flex-col md:flex-row md:items-center justify-between gap-2 text-xs transition-all ${
+            activeCandle.isHammer
+              ? 'bg-emerald-950/70 border-emerald-500/50 text-emerald-200 shadow-lg shadow-emerald-950/40'
+              : activeCandle.isFallingKnife
+              ? 'bg-rose-950/70 border-rose-500/50 text-rose-200 shadow-lg shadow-rose-950/40'
+              : activeCandle.isPositiveReaction
+              ? 'bg-sky-950/70 border-sky-500/50 text-sky-200 shadow-lg shadow-sky-950/40'
+              : 'bg-slate-800/90 border-slate-700/80 text-slate-300'
+          }`}>
+            <div className="flex items-center gap-2 flex-wrap">
+              <span className="font-extrabold flex items-center gap-1.5">
+                {activeCandle.isHammer ? (
+                  <>
+                    <span className="px-2 py-0.5 rounded-md bg-emerald-500/20 text-emerald-300 font-bold border border-emerald-500/40 flex items-center gap-1">
+                      🔨 MARTELO / PINBAR
+                    </span>
+                    <span className="text-emerald-300 font-semibold">
+                      Sombra inferior longa ({activeCandle.lowerShadowPercent.toFixed(0)}% do candle). Rejeição de mínimas e suporte defendido!
+                    </span>
+                  </>
+                ) : activeCandle.isFallingKnife ? (
+                  <>
+                    <span className="px-2 py-0.5 rounded-md bg-rose-500/20 text-rose-300 font-bold border border-rose-500/40 flex items-center gap-1">
+                      🔪 FACA CAINDO SEM REAÇÃO
+                    </span>
+                    <span className="text-rose-300 font-semibold">
+                      Corpo de queda forte ({activeCandle.bodyPercent.toFixed(0)}%) fechando na mínima sem sombra. NUNCA COMPRE ANTES DA REAÇÃO!
+                    </span>
+                  </>
+                ) : activeCandle.isPositiveReaction ? (
+                  <>
+                    <span className="px-2 py-0.5 rounded-md bg-sky-500/20 text-sky-300 font-bold border border-sky-500/40 flex items-center gap-1">
+                      ⚡ FECHAMENTO POSITIVO
+                    </span>
+                    <span className="text-sky-300 font-semibold">
+                      Reação compradora validada no suporte. Entrada no rompimento da máxima!
+                    </span>
+                  </>
+                ) : (
+                  <>
+                    <span className="px-2 py-0.5 rounded-md bg-amber-500/20 text-amber-300 font-bold border border-amber-500/40 flex items-center gap-1">
+                      ⏳ AGUARDANDO CONFIRMAÇÃO
+                    </span>
+                    <span className="text-slate-300">
+                      Espere o Candlestick de Confirmação: Nunca compre faca caindo sem reação (procure martelo/pinbar ou fechamento positivo).
+                    </span>
+                  </>
+                )}
+              </span>
+
+              {activeCandle.supportName && (
+                <span className="px-2 py-0.5 rounded-md bg-amber-500/20 text-amber-300 border border-amber-500/40 font-mono text-[11px] font-bold">
+                  Testando {activeCandle.supportName}
+                </span>
+              )}
+            </div>
+
+            <div className="text-[11px] font-mono text-slate-300 shrink-0 flex items-center gap-3">
+              <span>Sombra Inf: <strong className={activeCandle.lowerShadowPercent >= 40 ? 'text-emerald-400 font-bold' : 'text-slate-300'}>{activeCandle.lowerShadowPercent.toFixed(1)}%</strong></span>
+              <span>Corpo: <strong className="text-slate-300">{activeCandle.bodyPercent.toFixed(1)}%</strong></span>
+              <span>Sombra Sup: <strong className="text-slate-300">{activeCandle.upperShadowPercent.toFixed(1)}%</strong></span>
+            </div>
+          </div>
+
+          {/* OHLCV Metrics Bar */}
+          <div className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-7 gap-2 bg-slate-800/80 p-2.5 rounded-xl border border-slate-700/60 text-xs font-mono">
+            <div><span className="text-slate-400">Data:</span> <strong className="text-white">{activeCandle.date}</strong></div>
+            <div><span className="text-slate-400">Abertura:</span> <strong className="text-slate-200">{formatVal(activeCandle.open)}</strong></div>
+            <div><span className="text-slate-400">Máx:</span> <strong className="text-emerald-400">{formatVal(activeCandle.high)}</strong></div>
+            <div><span className="text-slate-400">Mín:</span> <strong className="text-rose-400">{formatVal(activeCandle.low)}</strong></div>
+            <div><span className="text-slate-400">Fechamento:</span> <strong className="text-white font-bold">{formatVal(activeCandle.close)}</strong></div>
+            <div><span className="text-slate-400">RSI:</span> <strong className={`${(activeCandle.rsi14 || 50) < 30 ? 'text-emerald-400 font-bold' : 'text-slate-300'}`}>{activeCandle.rsi14?.toFixed(1) || '-'}</strong></div>
+            <div><span className="text-slate-400">Vol:</span> <strong className="text-cyan-400">{((activeCandle.volume || 0) / 1e6).toFixed(1)}M</strong></div>
+          </div>
         </div>
       )}
 
@@ -251,11 +567,84 @@ export const TechnicalChart: React.FC<TechnicalChartProps> = ({
                 <g key={ratio}>
                   <line x1={padding.left} y1={y} x2={width - padding.right} y2={y} stroke="#1e293b" strokeDasharray="3 3" />
                   <text x={width - padding.right + 6} y={y + 3} fill="#64748b" fontSize="9" fontFamily="monospace">
-                    R$ {price.toFixed(2)}
+                    {formatVal(price)}
                   </text>
                 </g>
               );
             })}
+
+            {/* On-Chart HUD Alert: Espere o Candlestick de Confirmação */}
+            <g transform={`translate(${padding.left + 10}, ${padding.top + 5})`} className="pointer-events-none select-none">
+              <rect
+                x="0"
+                y="0"
+                width="390"
+                height="34"
+                rx="8"
+                fill={
+                  candleAnalysis.latestStatus === 'CONFIRMED'
+                    ? '#022c22'
+                    : candleAnalysis.latestStatus === 'FALLING_KNIFE'
+                    ? '#450a0a'
+                    : '#1c1917'
+                }
+                stroke={
+                  candleAnalysis.latestStatus === 'CONFIRMED'
+                    ? '#10b981'
+                    : candleAnalysis.latestStatus === 'FALLING_KNIFE'
+                    ? '#ef4444'
+                    : '#f59e0b'
+                }
+                strokeWidth="1.2"
+                opacity="0.92"
+              />
+              <circle
+                cx="15"
+                cy="17"
+                r="4.5"
+                fill={
+                  candleAnalysis.latestStatus === 'CONFIRMED'
+                    ? '#34d399'
+                    : candleAnalysis.latestStatus === 'FALLING_KNIFE'
+                    ? '#f87171'
+                    : '#fbbf24'
+                }
+              />
+              <text
+                x="28"
+                y="15"
+                fill="#ffffff"
+                fontSize="9.5"
+                fontWeight="900"
+                fontFamily="sans-serif"
+                letterSpacing="0.2"
+              >
+                {candleAnalysis.latestStatus === 'CONFIRMED'
+                  ? '✓ CONFIRMAÇÃO DETECTADA NO SUPORTE'
+                  : candleAnalysis.latestStatus === 'FALLING_KNIFE'
+                  ? '🔪 ALERTA DE RISCO: FACA CAINDO SEM REAÇÃO'
+                  : '⚠️ ESPERE O CANDLESTICK DE CONFIRMAÇÃO'}
+              </text>
+              <text
+                x="28"
+                y="27"
+                fill={
+                  candleAnalysis.latestStatus === 'CONFIRMED'
+                    ? '#6ee7b7'
+                    : candleAnalysis.latestStatus === 'FALLING_KNIFE'
+                    ? '#fca5a5'
+                    : '#fde68a'
+                }
+                fontSize="7.5"
+                fontFamily="sans-serif"
+              >
+                {candleAnalysis.latestStatus === 'CONFIRMED'
+                  ? 'Sombra longa/martelo testando suporte. Gatilho no rompimento da máxima!'
+                  : candleAnalysis.latestStatus === 'FALLING_KNIFE'
+                  ? 'Nunca compre uma faca caindo sem reação. Aguarde o fechamento do candle!'
+                  : 'Nunca compre sem reação: procure sombras inferiores longas ou fechamentos positivos.'}
+              </text>
+            </g>
 
             {/* Fibonacci Retracement Levels */}
             {showFibonacci && fibonacci && typeof fibonacci.high === 'number' && fibonacci.high > 0 && typeof fibonacci.fib618 === 'number' && !isNaN(fibonacci.fib618) && (
@@ -354,13 +743,13 @@ export const TechnicalChart: React.FC<TechnicalChartProps> = ({
 
             {/* Candlesticks or Line Mode */}
             {chartMode === 'candle' ? (
-              visibleCandles.map((c, i) => {
+              candleAnalysis.annotatedCandles.map((c, i) => {
                 const x = getX(i);
-                const open = typeof c.open === 'number' && !isNaN(c.open) ? c.open : (c.close || 0);
-                const close = typeof c.close === 'number' && !isNaN(c.close) ? c.close : open;
-                const high = typeof c.high === 'number' && !isNaN(c.high) ? c.high : Math.max(open, close);
-                const low = typeof c.low === 'number' && !isNaN(c.low) ? c.low : Math.min(open, close);
-                const isUp = close >= open;
+                const open = c.open;
+                const close = c.close;
+                const high = c.high;
+                const low = c.low;
+                const isUp = c.isUp;
                 const yHigh = getYPrice(high);
                 const yLow = getYPrice(low);
                 const bodyTop = getYPrice(Math.max(open, close));
@@ -384,6 +773,53 @@ export const TechnicalChart: React.FC<TechnicalChartProps> = ({
                       strokeWidth="0.5"
                       rx="1"
                     />
+
+                    {/* Marcadores Visuais de Confirmação & Faca Caindo */}
+                    {showConfirmationMarkers && (
+                      <>
+                        {/* 1. Martelo / Pinbar (Sombra inferior longa) */}
+                        {c.isHammer && (
+                          <g>
+                            <line x1={x} y1={yLow} x2={x} y2={Math.min(heightMain - padding.bottom - 4, yLow + 14)} stroke="#10b981" strokeWidth="1.2" strokeDasharray="2 2" />
+                            <circle cx={x} cy={Math.min(heightMain - padding.bottom - 4, yLow + 14)} r="2.5" fill="#10b981" />
+                            <g transform={`translate(${x}, ${Math.min(heightMain - padding.bottom - 10, yLow + 25)})`}>
+                              <rect x="-30" y="-7" width="60" height="14" rx="4" fill="#064e3b" stroke="#10b981" strokeWidth="0.8" opacity="0.95" />
+                              <text x="0" y="3" fill="#a7f3d0" fontSize="7.5" fontWeight="bold" textAnchor="middle" fontFamily="sans-serif">
+                                🔨 Martelo
+                              </text>
+                            </g>
+                          </g>
+                        )}
+
+                        {/* 2. Faca Caindo (Forte baixa fechando na mínima sem pavio nos últimos 5 candles) */}
+                        {c.isFallingKnife && i >= n - 5 && (
+                          <g>
+                            <line x1={x} y1={yLow} x2={x} y2={Math.min(heightMain - padding.bottom - 4, yLow + 14)} stroke="#ef4444" strokeWidth="1.2" strokeDasharray="2 2" />
+                            <circle cx={x} cy={Math.min(heightMain - padding.bottom - 4, yLow + 14)} r="2.5" fill="#ef4444" />
+                            <g transform={`translate(${x}, ${Math.min(heightMain - padding.bottom - 10, yLow + 25)})`}>
+                              <rect x="-35" y="-7" width="70" height="14" rx="4" fill="#4c0519" stroke="#ef4444" strokeWidth="0.8" opacity="0.95" />
+                              <text x="0" y="3" fill="#fecdd3" fontSize="7.5" fontWeight="bold" textAnchor="middle" fontFamily="sans-serif">
+                                🔪 Faca Caindo
+                              </text>
+                            </g>
+                          </g>
+                        )}
+
+                        {/* 3. Reação Positiva no Suporte (Últimos 3 candles) */}
+                        {c.isPositiveReaction && !c.isHammer && i >= n - 3 && (
+                          <g>
+                            <line x1={x} y1={yHigh} x2={x} y2={Math.max(padding.top + 14, yHigh - 12)} stroke="#38bdf8" strokeWidth="1.2" strokeDasharray="2 2" />
+                            <circle cx={x} cy={Math.max(padding.top + 14, yHigh - 12)} r="2.5" fill="#38bdf8" />
+                            <g transform={`translate(${x}, ${Math.max(padding.top + 8, yHigh - 22)})`}>
+                              <rect x="-30" y="-7" width="60" height="14" rx="4" fill="#0c4a6e" stroke="#38bdf8" strokeWidth="0.8" opacity="0.95" />
+                              <text x="0" y="3" fill="#bae6fd" fontSize="7.5" fontWeight="bold" textAnchor="middle" fontFamily="sans-serif">
+                                ⚡ Reação
+                              </text>
+                            </g>
+                          </g>
+                        )}
+                      </>
+                    )}
                   </g>
                 );
               })
@@ -421,6 +857,75 @@ export const TechnicalChart: React.FC<TechnicalChartProps> = ({
                 </g>
               )
             )}
+
+            {/* Interactive Candle Hover Tooltip directly on SVG Chart */}
+            {hoverIndex !== null && activeCandle && (() => {
+              const hx = getX(hoverIndex);
+              const hy = getYPrice(activeCandle.high);
+              const tooltipY = Math.max(padding.top + 45, Math.min(heightMain - padding.bottom - 45, hy - 38));
+              const tooltipX = Math.max(105, Math.min(width - padding.right - 105, hx));
+
+              return (
+                <g transform={`translate(${tooltipX}, ${tooltipY})`} className="pointer-events-none select-none">
+                  <rect
+                    x="-100"
+                    y="-28"
+                    width="200"
+                    height="38"
+                    rx="8"
+                    fill="#030712"
+                    stroke={
+                      activeCandle.isHammer
+                        ? '#10b981'
+                        : activeCandle.isFallingKnife
+                        ? '#ef4444'
+                        : activeCandle.isPositiveReaction
+                        ? '#38bdf8'
+                        : '#64748b'
+                    }
+                    strokeWidth="1.2"
+                    opacity="0.96"
+                  />
+                  <text x="0" y="-14" fill="#ffffff" fontSize="8.5" fontWeight="bold" textAnchor="middle" fontFamily="sans-serif">
+                    {activeCandle.date} • {formatVal(activeCandle.close)} ({activeCandle.isUp ? '+' : ''}{(((activeCandle.close - activeCandle.open) / (activeCandle.open || 1)) * 100).toFixed(2)}%)
+                  </text>
+                  <text
+                    x="0"
+                    y="-2"
+                    fill={
+                      activeCandle.isHammer
+                        ? '#34d399'
+                        : activeCandle.isFallingKnife
+                        ? '#f87171'
+                        : activeCandle.isPositiveReaction
+                        ? '#38bdf8'
+                        : '#fcd34d'
+                    }
+                    fontSize="7.8"
+                    fontWeight="bold"
+                    textAnchor="middle"
+                    fontFamily="sans-serif"
+                  >
+                    {activeCandle.isHammer
+                      ? `🔨 Martelo / Pinbar (Sombra Inf: ${activeCandle.lowerShadowPercent.toFixed(0)}%)`
+                      : activeCandle.isFallingKnife
+                      ? `🔪 Faca Caindo (Corpo: ${activeCandle.bodyPercent.toFixed(0)}%, sem sombra)`
+                      : activeCandle.isPositiveReaction
+                      ? `⚡ Reação Positiva no Suporte`
+                      : `⏳ Sombra Inf: ${activeCandle.lowerShadowPercent.toFixed(0)}% (Aguarde Confirmação)`}
+                  </text>
+                  <text x="0" y="6" fill="#cbd5e1" fontSize="6.8" textAnchor="middle" fontFamily="sans-serif">
+                    {activeCandle.isHammer
+                      ? '✓ Compradores defenderam o suporte. Compre no rompimento!'
+                      : activeCandle.isFallingKnife
+                      ? '✗ Nunca compre faca caindo sem reação!'
+                      : activeCandle.isPositiveReaction
+                      ? '✓ Reação confirmada. Estrutura pronta para trade.'
+                      : 'Espere o Candlestick de Confirmação antes de agir.'}
+                  </text>
+                </g>
+              );
+            })()}
 
             {/* Empty / Loading Message */}
             {n === 0 && (

@@ -34,6 +34,8 @@ import {
   History,
   Landmark,
   Newspaper,
+  Lightbulb,
+  BookOpen,
   X
 } from 'lucide-react';
 
@@ -275,6 +277,78 @@ export const AssetDetailPanel: React.FC<AssetDetailPanelProps> = ({
         </button>
       </div>
 
+      {/* Didactic Instruction Banner for the Active Tab */}
+      {(() => {
+        const isPt = (t('live') === 'AO VIVO' || t('scanBtn') === 'Escanear Mercado' || !t('live'));
+        const tips: Record<TabType, { title: string; desc: string }> = {
+          grafico: {
+            title: isPt ? 'Como interpretar o Gráfico & Suportes:' : 'How to interpret Chart & Fibonacci Supports:',
+            desc: isPt
+              ? 'Observe se o preço recente tocou os suportes de Fibonacci (38.2%, 50% ou 61.8%) e se formou um candle com pavio inferior (rejeição de mínimas). É esse o gatilho clássico do repique de Swing Trade.'
+              : 'Check if recent price touches key Fibonacci supports (38.2%, 50% or 61.8%) with lower-wick rejection candles. This is the classic swing trade rebound trigger.',
+          },
+          triplescreen: {
+            title: isPt ? 'Como interpretar o Triple Screen de Alexander Elder:' : 'How to interpret Alexander Elder Triple Screen:',
+            desc: isPt
+              ? 'A Tela 1 (Semanal) define a tendência maior (maré). A Tela 2 (Diária) detecta a onda contrária (recuo). A Tela 3 aciona a compra quando a onda diária se realinha à maré semanal.'
+              : 'Screen 1 (Weekly) defines the macro tide trend. Screen 2 (Daily) spots counter-trend pullbacks. Screen 3 triggers entry when the daily wave aligns with the weekly tide.',
+          },
+          minervini: {
+            title: isPt ? 'Como interpretar o Template de Tendência Minervini (SEPA):' : 'How to interpret Minervini Trend Template (SEPA):',
+            desc: isPt
+              ? 'Pontuações de 7/8 ou 8/8 confirmam que o ativo é um líder institucional com todas as médias móveis alinhadas para cima e espaço para valorização rápida.'
+              : 'Scores of 7/8 or 8/8 confirm the asset is an institutional market leader with aligned moving averages and room for swift momentum expansion.',
+          },
+          flow: {
+            title: isPt ? 'Como interpretar o Fluxo Institucional (Money Flow):' : 'How to interpret Institutional Money Flow (MFI):',
+            desc: isPt
+              ? 'Se o preço caiu mas o MFI e o saldo de volume mostram acumulação ou divergência de alta, grandes investidores institucionais estão absorvendo a venda no desconto.'
+              : 'If price pulled back while MFI shows divergence or positive volume accumulation, large institutions are quietly accumulating on the dip.',
+          },
+          ml: {
+            title: isPt ? 'Como interpretar a Previsão de Machine Learning:' : 'How to interpret Machine Learning AI Predictions:',
+            desc: isPt
+              ? 'O modelo ensemble calcula a probabilidade estatística de retorno positivo nos próximos 5 a 10 dias. Probabilidades acima de 65% representam forte assimetria a favor do comprador.'
+              : 'The ensemble model computes statistical odds of positive returns over the next 5 to 10 trading sessions. Odds > 65% represent favorable upside asymmetry.',
+          },
+          rl: {
+            title: isPt ? 'Como interpretar a Recomendação do Agente RL:' : 'How to interpret the Reinforcement Learning Agent:',
+            desc: isPt
+              ? 'O agente treinado por reforço simula as decisões de um gestor quantitativo, ponderando volatilidade, distância para o alvo e risco de perda antes de recomendar COMPRA.'
+              : 'The reinforcement learning agent acts as an autonomous quant portfolio manager, balancing volatility, target distance, and drawdown risk before recommending BUY.',
+          },
+          backtest: {
+            title: isPt ? 'Como interpretar o Backtest Histórico:' : 'How to interpret Historical Backtest Statistics:',
+            desc: isPt
+              ? 'Mostra o resultado real das últimas operações disparadas com estes mesmos critérios neste ativo. Taxas de acerto acima de 65% e Payoff > 1.5 validam a vantagem estatística.'
+              : 'Shows empirical results of past signals on this specific ticker. Win rates > 65% and Payoff > 1.5 confirm a mathematically robust edge.',
+          },
+          fundamentalista: {
+            title: isPt ? 'Como interpretar os Indicadores Fundamentalistas:' : 'How to interpret Fundamental Ratios:',
+            desc: isPt
+              ? 'Empresas com boa lucratividade (ROE > 15%, margens saudáveis e P/L equilibrado) tendem a se recuperar muito mais rápido após correções do mercado.'
+              : 'Companies with solid earnings power (ROE > 15%, healthy margins, fair P/E) recover substantially faster and safer following market dips.',
+          },
+          noticias: {
+            title: isPt ? 'Como interpretar o Sentimento das Notícias:' : 'How to interpret News Sentiment:',
+            desc: isPt
+              ? 'Quedas causadas por ruídos macroeconômicos passageiros geram excelentes compras de repique. Já quedas com escândalos ou fraudes graves devem ser evitadas.'
+              : 'Dips sparked by transient macro headlines yield high-reward swing setups, whereas structural corporate scandals should be avoided.',
+          },
+        };
+        const currentTip = tips[activeTab] || tips.grafico;
+
+        return (
+          <div className="bg-gradient-to-r from-blue-950/30 via-slate-900 to-indigo-950/30 border border-blue-500/30 rounded-xl p-3 flex items-start gap-2.5 text-xs">
+            <Lightbulb className="w-4 h-4 text-amber-400 shrink-0 mt-0.5" />
+            <div className="leading-relaxed">
+              <strong className="text-blue-300 font-bold mr-1.5">{currentTip.title}</strong>
+              <span className="text-slate-300">{currentTip.desc}</span>
+            </div>
+          </div>
+        );
+      })()}
+
       {/* Tab View Content */}
       <div className="pt-2">
         {activeTab === 'grafico' && (
@@ -285,6 +359,7 @@ export const AssetDetailPanel: React.FC<AssetDetailPanelProps> = ({
               ticker={selectedOpp.Ticker}
               timeframe={timeframe}
               onChangeTimeframe={(tf) => setTimeframe(tf)}
+              currency={currency}
             />
 
             {/* Fibonacci Summary Bar */}

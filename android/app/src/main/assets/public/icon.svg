@@ -1,62 +1,161 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
   <defs>
-    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" stop-color="#0f172a"/>
-      <stop offset="100%" stop-color="#1e293b"/>
+    <!-- Background Gradient (Clean white app store squircle) -->
+    <linearGradient id="bgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#ffffff"/>
+      <stop offset="100%" stop-color="#f8fafc"/>
     </linearGradient>
-    <linearGradient id="chartGlow" x1="0%" y1="0%" x2="100%" y2="0%">
-      <stop offset="0%" stop-color="#3b82f6"/>
-      <stop offset="50%" stop-color="#6366f1"/>
-      <stop offset="100%" stop-color="#10b981"/>
-    </linearGradient>
-    <linearGradient id="bullGreen" x1="0%" y1="0%" x2="0%" y2="100%">
-      <stop offset="0%" stop-color="#34d399"/>
-      <stop offset="100%" stop-color="#059669"/>
-    </linearGradient>
-    <linearGradient id="bearRed" x1="0%" y1="0%" x2="0%" y2="100%">
-      <stop offset="0%" stop-color="#fb7185"/>
-      <stop offset="100%" stop-color="#e11d48"/>
-    </linearGradient>
+
+    <filter id="subtleShadow" x="-5%" y="-5%" width="110%" height="110%">
+      <feDropShadow dx="0" dy="6" stdDeviation="8" flood-color="#0f172a" flood-opacity="0.06"/>
+    </filter>
+
+    <style>
+      .w-g { stroke: #00c853; stroke-width: 4.5; stroke-linecap: round; }
+      .w-r { stroke: #ff1744; stroke-width: 4.5; stroke-linecap: round; }
+      .b-g { fill: #00c853; rx: 3; }
+      .b-r { fill: #ff1744; rx: 3; }
+    </style>
   </defs>
 
-  <!-- Background with smooth rounded container -->
-  <rect width="512" height="512" rx="96" fill="url(#bg)"/>
-  <rect width="504" height="504" x="4" y="4" rx="92" fill="none" stroke="#334155" stroke-width="4"/>
+  <!-- 1. Background Container (Play Store Squircle) -->
+  <rect width="512" height="512" rx="115" fill="url(#bgGrad)"/>
+  <rect x="3" y="3" width="506" height="506" rx="112" fill="none" stroke="#e2e8f0" stroke-width="1.5"/>
 
-  <!-- Subtle grid lines -->
-  <line x1="60" y1="150" x2="452" y2="150" stroke="#334155" stroke-width="2" stroke-dasharray="6,6" opacity="0.35"/>
-  <line x1="60" y1="240" x2="452" y2="240" stroke="#334155" stroke-width="2" stroke-dasharray="6,6" opacity="0.35"/>
-  <line x1="60" y1="330" x2="452" y2="330" stroke="#334155" stroke-width="2" stroke-dasharray="6,6" opacity="0.35"/>
+  <!-- 2. Japanese Candlesticks Field -->
+  <g id="candlesticks" filter="url(#subtleShadow)">
+    <!-- 1. Green (Far Left low) -->
+    <line x1="73" y1="240" x2="73" y2="410" class="w-g"/>
+    <rect x="54" y="270" width="38" height="112" class="b-g"/>
 
-  <!-- Candlesticks & Bullish Rebound Formation -->
-  <!-- Candle 1: Red falling -->
-  <line x1="110" y1="170" x2="110" y2="300" stroke="#f43f5e" stroke-width="5"/>
-  <rect x="94" y="195" width="32" height="80" rx="4" fill="url(#bearRed)"/>
+    <!-- 2. Green (Left tall) -->
+    <line x1="112" y1="142" x2="112" y2="340" class="w-g"/>
+    <rect x="94" y="172" width="36" height="162" class="b-g"/>
 
-  <!-- Candle 2: Red oversold dip -->
-  <line x1="180" y1="220" x2="180" y2="370" stroke="#f43f5e" stroke-width="5"/>
-  <rect x="164" y="245" width="32" height="95" rx="4" fill="url(#bearRed)"/>
+    <!-- 3. Red (Left-Mid) -->
+    <line x1="150" y1="152" x2="150" y2="396" class="w-r"/>
+    <rect x="133" y="182" width="34" height="44" class="b-r"/>
 
-  <!-- Candle 3: Hammer / Reversal Pinbar (Sobrevenda B3) -->
-  <line x1="250" y1="280" x2="250" y2="410" stroke="#38bdf8" stroke-width="5"/>
-  <rect x="234" y="285" width="32" height="40" rx="4" fill="#38bdf8"/>
+    <!-- 4. Green (Mid-Left small) -->
+    <line x1="184" y1="176" x2="184" y2="360" class="w-g"/>
+    <rect x="170" y="180" width="28" height="38" class="b-g"/>
 
-  <!-- Candle 4: Green surging breakout -->
-  <line x1="320" y1="190" x2="320" y2="340" stroke="#10b981" stroke-width="5"/>
-  <rect x="304" y="210" width="32" height="100" rx="4" fill="url(#bullGreen)"/>
+    <!-- 5. Green (Center-Left tall) -->
+    <line x1="216" y1="126" x2="216" y2="370" class="w-g"/>
+    <rect x="201" y="152" width="32" height="52" class="b-g"/>
 
-  <!-- Candle 5: Strong green bull rally -->
-  <line x1="390" y1="110" x2="390" y2="260" stroke="#10b981" stroke-width="5"/>
-  <rect x="374" y="130" width="32" height="105" rx="4" fill="url(#bullGreen)"/>
+    <!-- 6. Red (Center tall) -->
+    <line x1="256" y1="88" x2="256" y2="376" class="w-r"/>
+    <rect x="238" y="115" width="36" height="66" class="b-r"/>
 
-  <!-- Dynamic Swing Trading Exponential Trend Curve -->
-  <path d="M 100 240 Q 220 420 395 130" fill="none" stroke="url(#chartGlow)" stroke-width="14" stroke-linecap="round"/>
-  <!-- Arrow Head -->
-  <polygon points="415,110 380,128 398,158" fill="#10b981"/>
+    <!-- 7. Green (Center small) -->
+    <line x1="292" y1="128" x2="292" y2="355" class="w-g"/>
+    <rect x="278" y="132" width="28" height="38" class="b-g"/>
 
-  <!-- B3 Badge -->
-  <g transform="translate(60, 65)">
-    <rect width="115" height="40" rx="10" fill="#2563eb" opacity="0.95"/>
-    <text x="57" y="26" fill="#ffffff" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="20" font-weight="900" text-anchor="middle" letter-spacing="1.5">B3 PRO</text>
+    <!-- 8. Red (Center-Right tallest) -->
+    <line x1="327" y1="68" x2="327" y2="330" class="w-r"/>
+    <rect x="309" y="98" width="36" height="72" class="b-r"/>
+
+    <!-- 9. Green (Mid-Right) -->
+    <line x1="365" y1="100" x2="365" y2="354" class="w-g"/>
+    <rect x="350" y="128" width="32" height="46" class="b-g"/>
+
+    <!-- 10. Red (Right) -->
+    <line x1="405" y1="132" x2="405" y2="376" class="w-r"/>
+    <rect x="388" y="160" width="34" height="52" class="b-r"/>
+
+    <!-- 11. Green (Far Right tall) -->
+    <line x1="446" y1="122" x2="446" y2="340" class="w-g"/>
+    <rect x="430" y="120" width="33" height="112" class="b-g"/>
+  </g>
+
+  <!-- 3. Charging Bull in Black with Solid White Outline -->
+  <g id="bull">
+    <!-- White Outline (stroke-width 7px) -->
+    <path d="
+      M 60,205
+      C 40,210 22,230 20,248
+      C 22,252 35,248 46,236
+      C 58,224 74,216 88,214
+      C 105,212 118,228 116,252
+      C 114,276 108,300 102,328
+      C 96,352 92,374 102,394
+      C 106,402 114,406 124,406
+      C 136,406 138,394 136,380
+      C 134,360 146,340 158,330
+      C 170,320 176,335 182,360
+      C 186,378 194,394 204,394
+      C 214,394 220,382 224,365
+      C 230,340 245,330 270,328
+      C 292,326 312,336 324,354
+      C 328,362 316,376 295,380
+      C 292,382 292,387 296,389
+      C 304,392 324,390 335,380
+      C 345,370 354,352 350,336
+      C 348,324 358,316 370,312
+      C 382,308 392,324 405,354
+      C 418,384 432,394 445,394
+      C 455,394 460,386 456,376
+      C 448,356 430,330 414,308
+      C 406,296 396,282 396,270
+      C 396,258 408,252 422,246
+      C 445,236 472,244 490,258
+      C 494,261 497,258 495,254
+      C 482,238 458,224 434,222
+      C 418,220 404,226 392,234
+      C 380,222 360,210 338,200
+      C 304,184 268,168 228,174
+      C 188,180 154,196 124,214
+      C 100,228 78,216 68,206
+      Z"
+      fill="none" stroke="#ffffff" stroke-width="8" stroke-linejoin="round" stroke-linecap="round"/>
+
+    <!-- Black Body -->
+    <path d="
+      M 60,205
+      C 40,210 22,230 20,248
+      C 22,252 35,248 46,236
+      C 58,224 74,216 88,214
+      C 105,212 118,228 116,252
+      C 114,276 108,300 102,328
+      C 96,352 92,374 102,394
+      C 106,402 114,406 124,406
+      C 136,406 138,394 136,380
+      C 134,360 146,340 158,330
+      C 170,320 176,335 182,360
+      C 186,378 194,394 204,394
+      C 214,394 220,382 224,365
+      C 230,340 245,330 270,328
+      C 292,326 312,336 324,354
+      C 328,362 316,376 295,380
+      C 292,382 292,387 296,389
+      C 304,392 324,390 335,380
+      C 345,370 354,352 350,336
+      C 348,324 358,316 370,312
+      C 382,308 392,324 405,354
+      C 418,384 432,394 445,394
+      C 455,394 460,386 456,376
+      C 448,356 430,330 414,308
+      C 406,296 396,282 396,270
+      C 396,258 408,252 422,246
+      C 445,236 472,244 490,258
+      C 494,261 497,258 495,254
+      C 482,238 458,224 434,222
+      C 418,220 404,226 392,234
+      C 380,222 360,210 338,200
+      C 304,184 268,168 228,174
+      C 188,180 154,196 124,214
+      C 100,228 78,216 68,206
+      Z"
+      fill="#111827"/>
+
+    <!-- Second Horn (Lower perspective horn) with white outline -->
+    <path d="M 408,246 C 430,248 456,260 472,274 C 476,276 478,272 475,268 C 458,252 436,240 412,238 Z"
+          fill="none" stroke="#ffffff" stroke-width="6" stroke-linejoin="round"/>
+    <path d="M 408,246 C 430,248 456,260 472,274 C 476,276 478,272 475,268 C 458,252 436,240 412,238 Z"
+          fill="#111827"/>
+
+    <!-- White Eye Crescent -->
+    <path d="M 384,258 C 392,260 396,267 396,272 C 392,270 387,268 384,264 Z" fill="#ffffff"/>
   </g>
 </svg>

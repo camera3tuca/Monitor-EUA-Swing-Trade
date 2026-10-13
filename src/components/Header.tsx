@@ -18,9 +18,10 @@ interface HeaderProps {
   onMarketChange?: (m: MarketUniverse) => void;
   onSelectMarket?: (m: MarketUniverse) => void;
   onOpenPlayStoreKit?: () => void;
+  onOpenTutorial?: () => void;
 }
 
-export const Header: React.FC<HeaderProps> = ({ onOpenPlayStoreKit }) => {
+export const Header: React.FC<HeaderProps> = ({ onOpenPlayStoreKit, onOpenTutorial }) => {
   const { language, setLanguage, t } = useLanguage();
   const [timeStr, setTimeStr] = useState<string>('');
   const [isLangMenuOpen, setIsLangMenuOpen] = useState<boolean>(false);
@@ -117,11 +118,11 @@ export const Header: React.FC<HeaderProps> = ({ onOpenPlayStoreKit }) => {
           {/* Brand Logo Group */}
           <div className="flex items-center gap-2.5 shrink-0">
             <div className="relative group flex items-center justify-center">
-              <div className="absolute -inset-0.5 bg-gradient-to-r from-blue-600 via-indigo-500 to-emerald-500 rounded-xl blur opacity-50 group-hover:opacity-80 transition duration-300"></div>
+              <div className="absolute -inset-1 bg-gradient-to-r from-emerald-500/25 to-blue-500/25 rounded-xl blur opacity-70 group-hover:opacity-100 transition duration-300"></div>
               <img
-                src="/icon.svg"
+                src="/bull-emblem.png"
                 alt="Wall Street Scanner"
-                className="relative w-10 h-10 md:w-11 md:h-11 rounded-xl border border-blue-400/50 bg-slate-950 p-1 shadow-lg object-contain"
+                className="relative w-11 h-11 md:w-12 md:h-12 object-contain rounded-xl drop-shadow-[0_2px_10px_rgba(16,185,129,0.3)]"
               />
             </div>
             <ScienceBitLogo variant="badge" size="sm" className="hidden sm:inline-flex" />
@@ -255,13 +256,27 @@ export const Header: React.FC<HeaderProps> = ({ onOpenPlayStoreKit }) => {
             <span className="text-[10px] text-slate-500">NY (ET)</span>
           </div>
 
-          {/* Guide toggle button */}
+          {/* Didactic Tutorial Modal Button */}
+          <button
+            id="btn-open-didactic-tutorial"
+            type="button"
+            onClick={onOpenTutorial}
+            className="flex items-center gap-1.5 bg-gradient-to-r from-blue-600/30 to-indigo-600/30 hover:from-blue-600/50 hover:to-indigo-600/50 border border-blue-400/50 text-blue-200 hover:text-white px-3 py-1.5 rounded-lg font-bold transition cursor-pointer text-xs sm:text-sm shadow-md"
+            title={language === 'pt' ? 'Abrir Instruções Didáticas e Passo a Passo' : 'Open Didactic Guide & Step-by-Step Tutorial'}
+          >
+            <BookOpen className="w-3.5 h-3.5 text-blue-400" />
+            <span>{language === 'pt' ? 'Instruções Didáticas' : 'Didactic Guide'}</span>
+            <span className="bg-amber-400 text-slate-950 text-[9px] font-black px-1.5 py-0.5 rounded uppercase">
+              {language === 'pt' ? 'Aprenda' : 'Learn'}
+            </span>
+          </button>
+
+          {/* Quick Summary Accordion toggle button */}
           <button
             id="btn-toggle-guide"
             onClick={() => setGuiaAberto(!guiaAberto)}
-            className="flex items-center gap-1.5 bg-blue-600/20 hover:bg-blue-600/30 border border-blue-500/40 text-blue-300 hover:text-blue-200 px-3 py-1.5 rounded-lg font-medium transition cursor-pointer text-xs sm:text-sm"
+            className="flex items-center gap-1.5 bg-slate-900/80 hover:bg-slate-800 border border-slate-700/80 text-slate-300 hover:text-white px-3 py-1.5 rounded-lg font-medium transition cursor-pointer text-xs sm:text-sm"
           >
-            <BookOpen className="w-3.5 h-3.5" />
             <span>{t('guideBtn')}</span>
             {guiaAberto ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
           </button>

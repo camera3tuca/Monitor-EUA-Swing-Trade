@@ -17,6 +17,8 @@ function generateScreenshot(svgContent, filename) {
   console.log(`✅ Gerado ${filename} (${png.length} bytes)`);
 }
 
+const icon512Base64 = fs.readFileSync(path.join(__dirname, '../public/playstore-icon-512.png')).toString('base64');
+
 // Common styles & gradients
 const commonDefs = `
   <defs>
@@ -26,7 +28,7 @@ const commonDefs = `
       <stop offset="100%" stop-color="#04060b"/>
     </linearGradient>
 
-    <linearGradient id="cyanGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+    <linearGradient id="cyanGrad" x1="0%" y1="0%" x2="100%" y2="100%">
       <stop offset="0%" stop-color="#38bdf8"/>
       <stop offset="50%" stop-color="#60a5fa"/>
       <stop offset="100%" stop-color="#818cf8"/>
@@ -94,10 +96,8 @@ const screenshot1 = `
     <g transform="translate(24, 60)">
       <rect width="900" height="85" rx="18" fill="#0f172a" stroke="#1e293b" stroke-width="2"/>
       
-      <!-- Bull Icon -->
-      <rect x="18" y="15" width="55" height="55" rx="14" fill="#1e293b" stroke="#f59e0b" stroke-width="1.5"/>
-      <path d="M 32 50 C 30 40 40 30 52 30 C 58 30 65 35 62 48 C 60 52 50 56 42 54 Z" fill="url(#bullGold)"/>
-      <circle cx="40" cy="36" r="2.5" fill="#ffffff"/>
+      <!-- New Charging Bull App Icon -->
+      <image href="data:image/png;base64,${icon512Base64}" x="18" y="15" width="55" height="55" />
 
       <text x="86" y="42" fill="#ffffff" font-family="sans-serif" font-size="22" font-weight="900">Wall Street Scanner</text>
       <text x="86" y="62" fill="#38bdf8" font-family="sans-serif" font-size="14" font-weight="700">Swing Trade Pro • S&amp;P 500 &amp; Nasdaq</text>
@@ -353,11 +353,11 @@ const screenshot2 = `
 
   <!-- Top Marketing Banner Text -->
   <g transform="translate(70, 70)">
-    <rect width="320" height="48" rx="24" fill="#1e293b" stroke="#38bdf8" stroke-width="2"/>
-    <text x="160" y="31" fill="#38bdf8" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="18" font-weight="bold" text-anchor="middle" letter-spacing="2">GRÁFICO PROFISSIONAL</text>
+    <rect width="360" height="48" rx="24" fill="#1e293b" stroke="#38bdf8" stroke-width="2"/>
+    <text x="180" y="31" fill="#38bdf8" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="18" font-weight="bold" text-anchor="middle" letter-spacing="2">GATILHOS DE CONFIRMAÇÃO</text>
 
-    <text x="0" y="115" fill="#ffffff" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="52" font-weight="900" letter-spacing="-1">Candlesticks &amp; Indicadores</text>
-    <text x="0" y="165" fill="#94a3b8" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="26" font-weight="500">EMA 9, EMA 21, EMA 200, Bollinger e Níveis de Fibonacci</text>
+    <text x="0" y="115" fill="#ffffff" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="48" font-weight="900" letter-spacing="-1">Espere o Candlestick de Confirmação</text>
+    <text x="0" y="165" fill="#94a3b8" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="25" font-weight="500">Nunca compre faca caindo: detecte Martelos, Pinbars e Fibo 61.8%</text>
   </g>
 
   <!-- Smartphone Mockup -->
@@ -406,9 +406,25 @@ const screenshot2 = `
       <text x="787" y="28" fill="#94a3b8" font-family="sans-serif" font-size="14" font-weight="600" text-anchor="middle">🤖 IA &amp; Predições</text>
     </g>
 
+    <!-- Alerta Estratégico do Usuário: Espere o Candlestick de Confirmação -->
+    <g transform="translate(24, 218)">
+      <rect width="900" height="96" rx="16" fill="#1c1608" stroke="#f59e0b" stroke-width="1.8"/>
+      <g transform="translate(20, 16)">
+        <rect width="40" height="40" rx="10" fill="#78350f" opacity="0.6"/>
+        <text x="20" y="28" fill="#fbbf24" font-family="sans-serif" font-size="22" text-anchor="middle">⚠️</text>
+        
+        <text x="52" y="22" fill="#fbbf24" font-family="sans-serif" font-size="18" font-weight="900">Espere o Candlestick de Confirmação</text>
+        <rect x="420" y="4" width="225" height="26" rx="8" fill="#064e3b" stroke="#10b981" stroke-width="1"/>
+        <text x="532" y="21" fill="#6ee7b7" font-family="sans-serif" font-size="12" font-weight="bold" text-anchor="middle">✓ MARTELO NO SUPORTE</text>
+        
+        <text x="52" y="48" fill="#ffffff" font-family="sans-serif" font-size="13.5" font-weight="bold">Regra de Ouro: <tspan fill="#e2e8f0" font-weight="normal">Nunca compre uma faca caindo sem reação.</tspan></text>
+        <text x="52" y="68" fill="#94a3b8" font-family="sans-serif" font-size="12.5">Procure por sombras inferiores longas (martelo, pinbar) ou fechamentos positivos testando suporte.</text>
+      </g>
+    </g>
+
     <!-- Main Candlestick Chart Area -->
-    <g transform="translate(24, 225)">
-      <rect width="900" height="740" rx="22" fill="#080d1a" stroke="#1e293b" stroke-width="2"/>
+    <g transform="translate(24, 324)">
+      <rect width="900" height="645" rx="22" fill="#080d1a" stroke="#1e293b" stroke-width="2"/>
 
       <!-- Legend -->
       <g transform="translate(25, 25)">
@@ -458,10 +474,13 @@ const screenshot2 = `
       <line x1="320" y1="280" x2="320" y2="440" stroke="#f43f5e" stroke-width="2.5"/>
       <rect x="305" y="300" width="30" height="100" rx="3" fill="url(#candleRed)"/>
 
-      <!-- Candle 4 Reversal Hammer (Sobrevenda) -->
-      <line x1="420" y1="380" x2="420" y2="560" stroke="#38bdf8" stroke-width="3"/>
-      <rect x="405" y="400" width="30" height="40" rx="3" fill="#38bdf8"/>
-      <text x="420" y="590" fill="#38bdf8" font-family="sans-serif" font-size="12" font-weight="bold" text-anchor="middle">MARTELO REVERSÃO</text>
+      <!-- Candle 4 Reversal Hammer (Sobrevenda) with confirmation pin -->
+      <line x1="420" y1="360" x2="420" y2="540" stroke="#10b981" stroke-width="3"/>
+      <rect x="405" y="380" width="30" height="40" rx="3" fill="#10b981"/>
+      <g transform="translate(420, 560)">
+        <rect x="-65" y="-12" width="130" height="24" rx="6" fill="#064e3b" stroke="#10b981" stroke-width="1.2"/>
+        <text x="0" y="4" fill="#a7f3d0" font-family="sans-serif" font-size="11" font-weight="bold" text-anchor="middle">🔨 Martelo / Rejeição</text>
+      </g>
 
       <!-- Candle 5 Bullish -->
       <line x1="520" y1="340" x2="520" y2="480" stroke="#10b981" stroke-width="2.5"/>

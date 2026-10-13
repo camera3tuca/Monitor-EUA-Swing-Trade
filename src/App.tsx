@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { Download, FileText } from 'lucide-react';
+import { Download, FileText, BookOpen, ChevronDown, ChevronUp, CheckCircle2, Lightbulb, HelpCircle } from 'lucide-react';
 import { Header } from './components/Header';
 import { ScannerFilters } from './components/ScannerFilters';
 import { OpportunitiesTable } from './components/OpportunitiesTable';
@@ -7,6 +7,7 @@ import { AssetDetailPanel, TabType } from './components/AssetDetailPanel';
 import { ScienceBitLogo } from './components/ScienceBitLogo';
 import { PlayStoreKitModal } from './components/PlayStoreKitModal';
 import { PrivacyPolicyModal } from './components/PrivacyPolicyModal';
+import { DidacticTutorialModal } from './components/DidacticTutorialModal';
 import { useLanguage } from './i18n/LanguageContext';
 
 import {
@@ -63,11 +64,13 @@ import {
 } from 'lucide-react';
 
 export const App: React.FC = () => {
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
+  const isPt = language === 'pt';
 
   // Market Selection (USA is the only market)
   const [market] = useState<MarketType>('usa');
   const [selectedUSUniverse, setSelectedUSUniverse] = useState<USUniverse>('all');
+  const [showDidacticBanner, setShowDidacticBanner] = useState<boolean>(true);
 
   // Filters State
   const [selectedSector, setSelectedSector] = useState<string>('all');
@@ -83,6 +86,7 @@ export const App: React.FC = () => {
   const [selectedTicker, setSelectedTicker] = useState<string | null>('NVDA');
   const [isKitModalOpen, setIsKitModalOpen] = useState<boolean>(false);
   const [isPrivacyModalOpen, setIsPrivacyModalOpen] = useState<boolean>(false);
+  const [isTutorialOpen, setIsTutorialOpen] = useState<boolean>(false);
 
   // Active Asset Analysis State
   const [timeframe, setTimeframe] = useState<string>('1d');
@@ -239,7 +243,10 @@ export const App: React.FC = () => {
   return (
     <div className="min-h-screen bg-slate-900 text-slate-100 flex flex-col font-['Plus_Jakarta_Sans',sans-serif]">
       {/* Top Navigation Header */}
-      <Header onOpenPlayStoreKit={() => setIsKitModalOpen(true)} />
+      <Header
+        onOpenPlayStoreKit={() => setIsKitModalOpen(true)}
+        onOpenTutorial={() => setIsTutorialOpen(true)}
+      />
 
       <main className="flex-1 max-w-7xl w-full mx-auto px-4 lg:px-8 py-6 space-y-6">
         {/* Scanner Filters */}
@@ -265,7 +272,106 @@ export const App: React.FC = () => {
           totalTotal={opportunities.length}
         />
 
-        {/* Opportunities Table with Inline Expandable Chart & Analysis */}
+        {/* Didactic Quick-Guide & Educational Instruction Banner */}
+        {showDidacticBanner ? (
+          <div className="bg-gradient-to-r from-slate-900 via-blue-950/40 to-slate-900 border border-blue-500/30 rounded-2xl p-4 sm:p-5 shadow-xl relative overflow-hidden animate-in fade-in duration-300">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-3 border-b border-slate-800">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center text-white shadow-lg shadow-blue-500/20 shrink-0">
+                  <BookOpen className="w-5 h-5" />
+                </div>
+                <div>
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <h3 className="text-sm sm:text-base font-bold text-white tracking-tight flex items-center gap-2">
+                      <span>{isPt ? 'Instruções Didáticas: Como Usar o Scanner em 3 Passos' : 'Didactic Guide: How to Use the Scanner in 3 Steps'}</span>
+                    </h3>
+                    <span className="bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 text-[10px] font-bold px-2 py-0.5 rounded-full uppercase">
+                      {isPt ? 'Guia Prático' : 'Quick Guide'}
+                    </span>
+                  </div>
+                  <p className="text-xs text-slate-400">
+                    {isPt
+                      ? 'Dicas práticas para identificar repiques de alta probabilidade e operar com gestão de risco'
+                      : 'Practical tips to spot high-probability swing trade bounces with solid risk control'}
+                  </p>
+                </div>
+              </div>
+
+              <div className="flex items-center gap-2 self-start md:self-auto shrink-0">
+                <button
+                  type="button"
+                  id="btn-banner-open-tutorial"
+                  onClick={() => setIsTutorialOpen(true)}
+                  className="flex items-center gap-1.5 bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold px-3.5 py-1.5 rounded-xl shadow-md transition cursor-pointer"
+                >
+                  <Lightbulb className="w-3.5 h-3.5 text-amber-300" />
+                  <span>{isPt ? 'Abrir Tutorial Completo' : 'Open Full Tutorial'}</span>
+                </button>
+                <button
+                  type="button"
+                  id="btn-banner-dismiss"
+                  onClick={() => setShowDidacticBanner(false)}
+                  className="text-slate-400 hover:text-slate-200 p-1.5 rounded-lg hover:bg-slate-800 transition cursor-pointer"
+                  title={isPt ? 'Minimizar Dicas' : 'Minimize Tips'}
+                >
+                  <ChevronUp className="w-4 h-4" />
+                </button>
+              </div>
+            </div>
+
+            {/* 3 Didactic Steps Cards */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-3 pt-3.5 text-xs">
+              <div className="bg-slate-900/80 border border-slate-700/60 rounded-xl p-3 hover:border-blue-500/40 transition">
+                <div className="flex items-center gap-2 text-blue-400 font-bold mb-1.5">
+                  <span className="w-5 h-5 rounded-full bg-blue-500/20 text-blue-300 flex items-center justify-center text-[11px] font-mono font-bold">1</span>
+                  <span>{isPt ? 'Filtrar Sobrevenda (IS)' : 'Filter Oversold (IS)'}</span>
+                </div>
+                <p className="text-slate-300 text-[11px] leading-relaxed">
+                  {isPt
+                    ? 'Observe a coluna IS (Índice de Sobrevenda). Valores > 70 ou IFR(14) < 30 indicam ativos excessivamente descontados com alta pressão de repique comprador.'
+                    : 'Watch the IS (Oversold Index) column. Scores > 70 or RSI(14) < 30 indicate heavily discounted assets primed for a technical bounce.'}
+                </p>
+              </div>
+
+              <div className="bg-slate-900/80 border border-slate-700/60 rounded-xl p-3 hover:border-emerald-500/40 transition">
+                <div className="flex items-center gap-2 text-emerald-400 font-bold mb-1.5">
+                  <span className="w-5 h-5 rounded-full bg-emerald-500/20 text-emerald-300 flex items-center justify-center text-[11px] font-mono font-bold">2</span>
+                  <span>{isPt ? 'Validar Suporte & Fibonacci' : 'Validate Support & Fibonacci'}</span>
+                </div>
+                <p className="text-slate-300 text-[11px] leading-relaxed">
+                  {isPt
+                    ? 'Clique no ativo para abrir o gráfico. Verifique se o preço repousa sobre a EMA 20/50/200 ou retração de 61.8% de Fibonacci, criando uma barreira de proteção.'
+                    : 'Click any asset to open chart analysis. Confirm if the price rests near EMA 20/50/200 or 61.8% Fibonacci, forming a solid technical floor.'}
+                </p>
+              </div>
+
+              <div className="bg-slate-900/80 border border-slate-700/60 rounded-xl p-3 hover:border-amber-500/40 transition">
+                <div className="flex items-center gap-2 text-amber-400 font-bold mb-1.5">
+                  <span className="w-5 h-5 rounded-full bg-amber-500/20 text-amber-300 flex items-center justify-center text-[11px] font-mono font-bold">3</span>
+                  <span>{isPt ? 'Triple Screen de Elder' : 'Triple Screen Strategy'}</span>
+                </div>
+                <p className="text-slate-300 text-[11px] leading-relaxed">
+                  {isPt
+                    ? 'Acesse a aba Triple Screen: só compre quando a maré semanal for de alta (EMA semanal subindo) e a onda diária estiver em sobrevenda com gatilho de entrada.'
+                    : 'Access the Triple Screen tab: enter long only when weekly tide is bullish (rising EMA) and daily wave reaches oversold with an entry trigger.'}
+                </p>
+              </div>
+            </div>
+          </div>
+        ) : (
+          <div className="flex justify-end">
+            <button
+              type="button"
+              onClick={() => setShowDidacticBanner(true)}
+              className="inline-flex items-center gap-1.5 text-xs text-blue-400 hover:text-blue-300 bg-slate-900/80 border border-slate-800 hover:border-blue-500/40 px-3 py-1.5 rounded-xl transition cursor-pointer"
+            >
+              <Lightbulb className="w-3.5 h-3.5 text-amber-400" />
+              <span>{isPt ? 'Mostrar Instruções Didáticas Rápidas' : 'Show Quick Didactic Guide'}</span>
+            </button>
+          </div>
+        )}
+
+        {/* Tabela de Oportunidades (Lista de Seleção de Ativos) */}
         <OpportunitiesTable
           opportunities={filteredOpportunities}
           selectedTicker={selectedTicker}
@@ -273,29 +379,31 @@ export const App: React.FC = () => {
           selectedSector={selectedSector}
           onSelectSector={setSelectedSector}
           availableSectors={availableSectors}
-          detailContent={
-            selectedOpp ? (
-              <AssetDetailPanel
-                selectedOpp={selectedOpp}
-                activeTab={activeTab}
-                setActiveTab={setActiveTab}
-                candles={candles}
-                fibonacci={fibonacci}
-                timeframe={timeframe}
-                setTimeframe={setTimeframe}
-                tripleScreen={tripleScreen}
-                minervini={minervini}
-                flowResult={flowResult}
-                mlPrediction={mlPrediction}
-                rlAgent={rlAgent}
-                backtestData={backtestData}
-                fundamentals={fundamentals}
-                news={news}
-                onClose={() => setSelectedTicker(null)}
-              />
-            ) : null
-          }
         />
+
+        {/* Painel Completo de Análise Técnica do Ativo Selecionado */}
+        {selectedOpp && (
+          <div id="selected-asset-analysis">
+            <AssetDetailPanel
+              selectedOpp={selectedOpp}
+              activeTab={activeTab}
+              setActiveTab={setActiveTab}
+              candles={candles}
+              fibonacci={fibonacci}
+              timeframe={timeframe}
+              setTimeframe={setTimeframe}
+              tripleScreen={tripleScreen}
+              minervini={minervini}
+              flowResult={flowResult}
+              mlPrediction={mlPrediction}
+              rlAgent={rlAgent}
+              backtestData={backtestData}
+              fundamentals={fundamentals}
+              news={news}
+              onClose={() => setSelectedTicker(null)}
+            />
+          </div>
+        )}
       </main>
 
       {/* Footer & Regulatory / Educational Disclaimer */}
@@ -304,9 +412,9 @@ export const App: React.FC = () => {
           <div className="flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-slate-400">
             <div className="flex flex-wrap items-center gap-2.5">
               <img
-                src="/icon.svg"
+                src="/bull-emblem.png"
                 alt="Wall Street Scanner"
-                className="w-6 h-6 rounded-lg border border-slate-700 bg-slate-950 p-0.5 flex-shrink-0"
+                className="w-6 h-6 object-contain flex-shrink-0"
               />
               <span className="font-semibold text-slate-200">
                 Wall Street Scanner Pro (S&P 500, Nasdaq, NYSE, ETFs)
@@ -321,6 +429,15 @@ export const App: React.FC = () => {
                 Versão 2.0 Wall Street Pro
               </span>
               <span className="text-slate-600 hidden sm:inline">|</span>
+              <button
+                id="footer-btn-tutorial"
+                type="button"
+                onClick={() => setIsTutorialOpen(true)}
+                className="inline-flex items-center gap-1.5 text-blue-300 hover:text-white transition text-[11px] font-bold bg-blue-900/30 hover:bg-blue-800/50 border border-blue-500/40 px-2.5 py-1 rounded-lg cursor-pointer"
+              >
+                <BookOpen className="w-3 h-3 text-blue-400" />
+                <span>Instruções Didáticas</span>
+              </button>
               <button
                 id="footer-btn-download-assets"
                 type="button"
@@ -364,6 +481,12 @@ export const App: React.FC = () => {
           </div>
         </div>
       </footer>
+
+      {/* Didactic Tutorial Modal */}
+      <DidacticTutorialModal
+        isOpen={isTutorialOpen}
+        onClose={() => setIsTutorialOpen(false)}
+      />
 
       {/* Play Store Assets Modal */}
       <PlayStoreKitModal

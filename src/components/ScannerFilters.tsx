@@ -245,6 +245,19 @@ export const ScannerFilters: React.FC<ScannerFiltersProps> = ({
           )}
         </div>
       </div>
+
+      {/* Didactic Tip for Scanning */}
+      <div className="pt-2.5 border-t border-slate-700/50 flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-[11px] text-slate-400">
+        <div className="flex items-center gap-2 flex-wrap">
+          <span className="text-amber-300 font-bold flex items-center gap-1 bg-amber-500/10 border border-amber-500/20 px-2 py-0.5 rounded">
+            <span>💡</span>
+            <span>Dica didática de rastreamento:</span>
+          </span>
+          <span>
+            Ao ativar o filtro <strong className="text-slate-200">Acima EMA 200</strong>, o scanner seleciona apenas correções saudáveis em ativos que mantêm tendência de alta de longo prazo.
+          </span>
+        </div>
+      </div>
     </div>
   );
 };
